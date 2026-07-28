@@ -42,7 +42,7 @@ export default function CamerasPage() {
         const camerasData = await getCameras();
         setCameras(camerasData);
         // Extract unique locations for filters
-        const uniqueLocations = [...new Set(camerasData.map(c => c.location))];
+        const uniqueLocations = Array.from(new Set(camerasData.map(c => c.location)));
         setFilters(prev => ({
           ...prev,
           locations: uniqueLocations,
