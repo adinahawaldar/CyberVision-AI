@@ -32,9 +32,14 @@ export function useNotifications() {
     setNotifications([newNotification, ...notifications]);
   };
 
+  const clearAllNotifications = () => {
+    setNotifications([]);
+  };
+
   return {
     notifications,
     clearNotification,
+    clearAllNotifications,
     markAsRead,
     markAllAsRead,
     addNotification

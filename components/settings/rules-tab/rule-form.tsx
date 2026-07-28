@@ -57,6 +57,7 @@ const vehicleRecognizedSchema = {
   enabled: z.boolean(),
   cameraId: z.string().min(1, { message: "Camera selection is required" }),
   role: z.string().min(1, { message: "Role is required" }),
+  licensePlatePattern: z.string().optional(),
 };
 
 // Create full schema with conditional fields
@@ -508,7 +509,7 @@ export default function RuleForm({ onSubmit, isSubmitting, onCancel, initialValu
               <>
                 <FormField
                   control={form.control}
-                  name="vehicleRole"
+                  name="role"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Vehicle Role</FormLabel>

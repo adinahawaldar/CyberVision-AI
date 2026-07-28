@@ -31,7 +31,7 @@ export type VehicleCondition = {
 export type RuleCondition = 
   | { type: 'attendance', data: AttendanceCondition }
   | { type: 'vehicle', data: VehicleCondition }
-  | { type: 'general', data: { description: string } };
+  | { type: 'general', data: { description: string; role?: string } };
 
 // Rule definition
 export interface Rule {
