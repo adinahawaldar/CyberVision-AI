@@ -3,6 +3,7 @@ import Hero from "@/components/landing/hero";
 import Features from "@/components/landing/features";
 import Working from "@/components/landing/working";
 import DetectionPipeline from "@/components/landing/detection-pipeline";
+import Security from "@/components/landing/security";
 import CTA from "@/components/landing/cta";
 import Footer from "@/components/landing/footer";
 
@@ -19,6 +20,7 @@ export default function LandingPage() {
       <Features />
       <Working />
       <DetectionPipeline />
+      <Security />
       <CTA />
       <Footer />
     </main>
