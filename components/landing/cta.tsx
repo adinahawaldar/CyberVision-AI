@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ShieldAlert, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/providers/auth-provider";
 
@@ -11,63 +11,78 @@ export default function CTA() {
 
   const handleDashboardClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    router.push("/login");
+    if (isAuthenticated) {
+      router.push("/dashboard");
+    } else {
+      router.push("/login");
+    }
   };
 
   return (
-    <section className="py-20 md:py-28 bg-background relative overflow-hidden">
-      {/* Dynamic Background Glow */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-950/20 to-transparent pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-gradient-to-r from-cyan-600/20 via-blue-600/20 to-indigo-600/20 rounded-full blur-[140px] pointer-events-none" />
+    <section className="py-12 sm:py-16 bg-[#111317] text-white relative overflow-hidden flex flex-col justify-center items-center">
+      {/* Background Curved Silhouette matching Hero section */}
+      <div className="absolute inset-0 pointer-events-none z-0 flex justify-center">
+        <div className="w-full max-w-7xl h-full relative">
+          <svg
+            className="w-full h-full text-[#161820] opacity-90"
+            viewBox="0 0 1000 1000"
+            preserveAspectRatio="none"
+            fill="currentColor"
+          >
+            <path d="M 0 1000 L 1000 1000 L 1000 900 C 700 850 650 650 650 450 C 650 250 900 100 1000 0 L 0 0 C 250 100 350 250 350 450 C 350 650 300 850 0 900 Z" />
+          </svg>
+        </div>
+      </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        
-        <div className="rounded-3xl border border-cyan-500/30 bg-gradient-to-br from-slate-900/90 via-slate-950 to-slate-900/90 p-8 sm:p-12 lg:p-16 shadow-2xl shadow-cyan-950/50 backdrop-blur-2xl text-center space-y-8 relative overflow-hidden">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+        <div className="rounded-3xl border border-white/10 bg-[#161820]/90 p-6 sm:p-8 lg:p-10 shadow-2xl backdrop-blur-xl text-center space-y-5 relative overflow-hidden">
           
-          {/* Subtle Top Grid lines */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293710_1px,transparent_1px),linear-gradient(to_bottom,#1f293710_1px,transparent_1px)] bg-[size:2rem_2rem] pointer-events-none" />
+          {/* Subtle Top Badge */}
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-white/15 bg-white/5 text-slate-300 text-xs font-mono">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff3538] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff3538]"></span>
+            </span>
+            <span>CYBERVISION AI PLATFORM</span>
+          </div>
 
-          <div className="relative z-10 space-y-4 max-w-2xl mx-auto">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-950/30 text-emerald-400 text-xs font-mono">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span>Local Dev Console Available</span>
-            </div>
-
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground tracking-tight leading-tight">
-              Ready to Upgrade Your <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">Surveillance Intelligence</span>?
+          {/* High-Impact Hero-Style Heading */}
+          <div className="space-y-3 max-w-3xl mx-auto select-none">
+            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white leading-tight">
+              READY TO UPGRADE YOUR{" "}
+              <span className="inline-block bg-[#ff3538] text-white px-3 sm:px-4 py-0.5 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgba(255,53,56,0.45)] transform -rotate-1 hover:rotate-0 transition-transform my-0.5">
+                SURVEILLANCE
+              </span>{" "}
+              INTELLIGENCE?
             </h2>
 
-            <p className="text-base sm:text-lg text-muted-foreground">
-              Get started with the dashboard right now. Monitor real-time CCTV streams, test YOLO object tracking, and experience instant alert dispatches.
+            <p className="text-slate-300 text-xs sm:text-sm md:text-base max-w-xl mx-auto font-medium">
+              Get started with the dashboard right now. Monitor real-time CCTV streams, test AI object tracking, and experience instant alert dispatches.
             </p>
           </div>
 
-          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+          {/* Minimal Height White CTA Button */}
+          <div className="pt-1 flex justify-center">
             <Button
               onClick={handleDashboardClick}
-              size="lg"
-              className="w-full sm:w-auto bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white shadow-xl shadow-cyan-500/25 border-0 px-8 py-6 text-base font-semibold cursor-pointer"
+              className="h-10 sm:h-11 px-6 sm:px-8 rounded-full bg-white hover:bg-slate-100 text-black font-extrabold text-xs uppercase tracking-wider transition-all hover:scale-105 shadow-md flex items-center space-x-2 cursor-pointer border-0"
             >
-              <ShieldAlert className="w-5 h-5 mr-2" />
-              Get Started
-              <ArrowRight className="w-4 h-4 ml-2" />
+              <span>GET STARTED NOW</span>
+              <ArrowRight className="w-4 h-4 text-black" />
             </Button>
           </div>
 
-          <div className="relative z-10 pt-4 flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground font-mono">
+          {/* Feature highlights below CTA button */}
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-5 text-xs text-slate-400 font-mono">
             <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-cyan-400" /> Demo Admin Access Built-In
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#ff3538]" /> Demo Admin Access Built-In
             </span>
             <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-cyan-400" /> Mock Camera HLS Streams Active
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#ff3538]" /> Mock Camera HLS Streams Active
             </span>
           </div>
 
         </div>
-
       </div>
     </section>
   );

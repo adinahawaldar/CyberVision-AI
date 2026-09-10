@@ -70,20 +70,20 @@ export default function Hero() {
 
         {/* HIGH-IMPACT TYPOGRAPHY "WE SEE MORE" */}
         <div className="relative select-none my-2 sm:my-4">
-          <h1 className="font-extrabold uppercase tracking-tighter leading-[0.88] flex flex-col items-center justify-center">
+          <h1 className="font-black uppercase tracking-tighter leading-[0.88] flex flex-col items-center justify-center font-extrabold">
             {/* "WE" */}
-            <span className="text-5xl sm:text-7xl md:text-8xl lg:text-[8.5rem] font-black text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)] tracking-tight">
+            <span className="text-5xl sm:text-7xl md:text-8xl lg:text-[8.5rem] font-black font-extrabold text-white drop-shadow-[0_10px_25px_rgba(0,0,0,0.95)] tracking-tight">
               WE
             </span>
 
             {/* "SEE MORE" ROW */}
             <div className="flex items-center justify-center space-x-2 sm:space-x-4 md:space-x-5 mt-1 sm:mt-2">
               {/* "SEE" Highlight Block in Vibrant Coral-Red */}
-              <span className="bg-[#ff3538] text-white px-4 sm:px-6 py-0.5 sm:py-1 rounded-xl sm:rounded-2xl text-4xl sm:text-6xl md:text-7xl lg:text-[7.5rem] font-black tracking-tight shadow-[0_8px_30px_rgba(255,53,56,0.45)] transform -rotate-1 hover:rotate-0 transition-transform">
+              <span className="bg-[#ff3538] text-white px-4 sm:px-6 py-0.5 sm:py-1 rounded-xl sm:rounded-2xl text-4xl sm:text-6xl md:text-7xl lg:text-[7.5rem] font-black font-extrabold tracking-tight shadow-[0_8px_30px_rgba(255,53,56,0.45)] transform -rotate-1 hover:rotate-0 transition-transform">
                 SEE
               </span>
               {/* "MORE" */}
-              <span className="text-5xl sm:text-7xl md:text-8xl lg:text-[8.5rem] font-black text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)] tracking-tight">
+              <span className="text-5xl sm:text-7xl md:text-8xl lg:text-[8.5rem] font-black font-extrabold text-white drop-shadow-[0_10px_25px_rgba(0,0,0,0.95)] tracking-tight">
                 MORE
               </span>
             </div>

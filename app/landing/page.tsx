@@ -3,9 +3,8 @@ import Hero from "@/components/landing/hero";
 import Features from "@/components/landing/features";
 import Working from "@/components/landing/working";
 import DetectionPipeline from "@/components/landing/detection-pipeline";
-import AIShowcase from "@/components/landing/ai-showcase";
-import Stats from "@/components/landing/stats";
 import CTA from "@/components/landing/cta";
+import Footer from "@/components/landing/footer";
 
 export const metadata = {
   title: "CyberVision-AI — Smart AI CCTV Surveillance System",
@@ -20,9 +19,8 @@ export default function LandingPage() {
       <Features />
       <Working />
       <DetectionPipeline />
-      <AIShowcase />
-      <Stats />
       <CTA />
+      <Footer />
     </main>
   );
 }
