@@ -18,7 +18,7 @@ export default function Working() {
         {/* SECTION CAPTION */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
           <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white uppercase leading-tight">
-            SYSTEM <span className="bg-gradient-to-r from-white via-slate-200 to-[#ff3538] bg-clip-text text-transparent">OPERATIONS & WORKFLOW</span>
+            SYSTEM OPERATIONS & WORKFLOW
           </h2>
           <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
             Connecting edge CCTV camera streams directly to real-time AI computer vision analysis and unified mobile & desktop control rooms.
