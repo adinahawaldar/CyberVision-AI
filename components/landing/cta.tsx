@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/providers/auth-provider";
 
@@ -20,6 +21,16 @@ export default function CTA() {
 
   return (
     <section className="py-12 sm:py-16 bg-[#111317] text-white relative overflow-hidden flex flex-col justify-center items-center">
+
+      {/* Background Ambient Aura Glow */}
+      <div className="absolute inset-0 pointer-events-none z-0 flex justify-center items-center">
+        <motion.div
+          animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="w-[600px] h-[350px] bg-[#ff3538]/20 rounded-full blur-[140px]"
+        />
+      </div>
+
       {/* Background Curved Silhouette matching Hero section */}
       <div className="absolute inset-0 pointer-events-none z-0 flex justify-center">
         <div className="w-full max-w-7xl h-full relative">
@@ -35,24 +46,29 @@ export default function CTA() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-        <div className="rounded-3xl border border-white/10 bg-[#161820]/90 p-6 sm:p-8 lg:p-10 shadow-2xl backdrop-blur-xl text-center space-y-5 relative overflow-hidden">
-          
-          {/* Subtle Top Badge */}
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-white/15 bg-white/5 text-slate-300 text-xs font-mono">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff3538] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff3538]"></span>
-            </span>
-            <span>CYBERVISION AI PLATFORM</span>
-          </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.85, y: 50 }}
+          whileInView={{ opacity: 1, scale: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.2 }}
+          transition={{ duration: 0.9, type: "spring", stiffness: 80 }}
+          className="rounded-3xl border border-white/15 bg-[#161820]/90 p-6 sm:p-8 lg:p-10 shadow-2xl backdrop-blur-xl text-center space-y-5 relative overflow-hidden"
+        >
+
+
 
           {/* High-Impact Hero-Style Heading */}
           <div className="space-y-3 max-w-3xl mx-auto select-none">
             <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white leading-tight">
               READY TO UPGRADE YOUR{" "}
-              <span className="inline-block bg-[#ff3538] text-white px-3 sm:px-4 py-0.5 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgba(255,53,56,0.45)] transform -rotate-1 hover:rotate-0 transition-transform my-0.5">
+              <motion.span
+                initial={{ scale: 0.6, rotate: -5 }}
+                whileInView={{ scale: 1, rotate: -1 }}
+                viewport={{ once: false, amount: 0.2 }}
+                transition={{ duration: 0.7, delay: 0.2, type: "spring" }}
+                className="inline-block bg-[#ff3538] text-white px-3 sm:px-4 py-0.5 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgba(255,53,56,0.55)] hover:rotate-0 transition-transform my-0.5"
+              >
                 SURVEILLANCE
-              </span>{" "}
+              </motion.span>{" "}
               INTELLIGENCE?
             </h2>
 
@@ -62,15 +78,21 @@ export default function CTA() {
           </div>
 
           {/* Minimal Height White CTA Button */}
-          <div className="pt-1 flex justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.2 }}
+            transition={{ duration: 0.7, delay: 0.4 }}
+            className="pt-1 flex justify-center"
+          >
             <Button
               onClick={handleDashboardClick}
-              className="h-10 sm:h-11 px-6 sm:px-8 rounded-full bg-white hover:bg-slate-100 text-black font-extrabold text-xs uppercase tracking-wider transition-all hover:scale-105 shadow-md flex items-center space-x-2 cursor-pointer border-0"
+              className="h-10 sm:h-11 px-6 sm:px-8 rounded-full bg-white hover:bg-slate-100 text-black font-extrabold text-xs uppercase tracking-wider transition-all hover:scale-110 shadow-lg flex items-center space-x-2 cursor-pointer border-0 group"
             >
               <span>GET STARTED NOW</span>
-              <ArrowRight className="w-4 h-4 text-black" />
+              <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform" />
             </Button>
-          </div>
+          </motion.div>
 
           {/* Feature highlights below CTA button */}
           <div className="pt-2 flex flex-wrap items-center justify-center gap-5 text-xs text-slate-400 font-mono">
@@ -82,7 +104,7 @@ export default function CTA() {
             </span>
           </div>
 
-        </div>
+        </motion.div>
       </div>
     </section>
   );

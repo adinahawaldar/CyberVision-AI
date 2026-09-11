@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 export default function Footer() {
   return (
@@ -8,7 +9,13 @@ export default function Footer() {
 
       {/* TOP SECTION: BRAND & NAVIGATION COLUMNS */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 mb-16">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-12">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.2 }}
+          transition={{ duration: 0.8 }}
+          className="grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-12"
+        >
 
           {/* LEFT BRAND SUMMARY */}
           <div className="lg:col-span-2 space-y-4">
@@ -69,16 +76,20 @@ export default function Footer() {
 
           </div>
 
-        </div>
-
-
+        </motion.div>
       </div>
 
-      {/* GIANT RED GRADIENT WATERMARK TEXT AT BOTTOM */}
+      {/* GIANT RED GRADIENT WATERMARK TEXT AT BOTTOM WITH CRAZY SCROLL IN & UP REVEAL */}
       <div className="w-full overflow-hidden select-none pointer-events-none pt-4 pb-0 flex justify-center items-end leading-none">
-        <h1 className="text-[13vw] sm:text-[15vw] font-black uppercase tracking-tighter leading-[0.75] text-center bg-gradient-to-b from-[#ff3538] via-[#e62e31] to-[#ff3538]/20 bg-clip-text text-transparent [mask-image:linear-gradient(to_right,transparent_0%,black_15%,black_85%,transparent_100%)] transform translate-y-4">
+        <motion.h1
+          initial={{ opacity: 0, y: 100, scale: 0.88 }}
+          whileInView={{ opacity: 1, y: 16, scale: 1 }}
+          viewport={{ once: false, amount: 0.1 }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
+          className="text-[13vw] sm:text-[15vw] font-black uppercase tracking-tighter leading-[0.75] text-center bg-gradient-to-b from-[#ff3538] via-[#e62e31] to-[#ff3538]/20 bg-clip-text text-transparent [mask-image:linear-gradient(to_right,transparent_0%,black_15%,black_85%,transparent_100%)]"
+        >
           CYBERVISION
-        </h1>
+        </motion.h1>
       </div>
 
     </footer>

@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Activity, ShieldCheck, Zap, Server, Globe, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -46,22 +47,32 @@ export default function Stats() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.2 }}
+          transition={{ duration: 0.7 }}
+          className="text-center max-w-2xl mx-auto mb-12 space-y-2"
+        >
           <Badge variant="outline" className="text-xs font-mono text-cyan-400 border-cyan-500/30 bg-cyan-950/30">
             PERFORMANCE SPECS
           </Badge>
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
             Benchmarked for High-Stakes Environments
           </h2>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {metrics.map((m, idx) => {
             const Icon = m.icon;
             return (
-              <div
+              <motion.div
                 key={idx}
-                className="p-6 rounded-2xl bg-card/30 backdrop-blur-md border border-border/60 hover:border-cyan-500/40 transition-all duration-300 group flex flex-col justify-between"
+                initial={{ opacity: 0, y: 60, scale: 0.85 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: false, amount: 0.2 }}
+                transition={{ duration: 0.7, delay: idx * 0.12, type: "spring", stiffness: 100 }}
+                className="p-6 rounded-2xl bg-card/30 backdrop-blur-md border border-border/60 hover:border-cyan-500/40 hover:scale-105 transition-all duration-300 group flex flex-col justify-between shadow-xl"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 group-hover:scale-110 transition-transform">
@@ -83,7 +94,7 @@ export default function Stats() {
                     {m.detail}
                   </p>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
