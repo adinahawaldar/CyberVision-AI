@@ -1,0 +1,29 @@
+[
+  {
+    "id": "notif-breach-01",
+    "title": "Perimeter Patrol Alert",
+    "message": "Unscheduled movement detected at Perimeter North by YOLOv8 tracking.",
+    "timestamp": "2026-09-20T14:45:00Z",
+    "type": "warning",
+    "read": false,
+    "link": "/dashboard/cameras/live?camera=cam-synthetic-2"
+  },
+  {
+    "id": "notif-auth-02",
+    "title": "Authorized Staff Entry",
+    "message": "Chief Security Officer verified at Main Entrance camera.",
+    "timestamp": "2026-09-20T15:00:00Z",
+    "type": "info",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-webcam-0"
+  },
+  {
+    "id": "notif-system-03",
+    "title": "Vision Engine Online",
+    "message": "All 3 surveillance streams connected. Real-time inference active.",
+    "timestamp": "2026-09-20T15:15:00Z",
+    "type": "success",
+    "read": true,
+    "link": "/dashboard/health"
+  }
+]

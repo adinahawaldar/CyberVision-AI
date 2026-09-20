@@ -43,14 +43,14 @@ export const getCamerasClient = async (): Promise<Camera[]> => {
       id: camera.id,
       name: camera.name,
       location: camera.location || 'Default Location',
-      status: activeStreams.has(camera.id) ? 'online' : 'offline',
-      streamUrl: camera.rtsp_url,
-      hlsUrl: streamUrls[camera.id] || null,
-      thumbnailUrl: '/camera-placeholder.jpg', // Default thumbnail
+      status: activeStreams.has(camera.id) ? 'online' : (camera.status || 'offline'),
+      streamUrl: camera.stream_url || `http://localhost:8000/api/v1/streaming/live/${camera.id}`,
+      hlsUrl: streamUrls[camera.id] || camera.hls_url || `http://localhost:8000/api/v1/streaming/live/${camera.id}`,
+      thumbnailUrl: camera.thumbnail_url || `http://localhost:8000/api/v1/streaming/snapshot/${camera.id}`,
       aiFeatures: camera.filters || [],
       model: camera.model || 'Unknown',
-      lastSeen: new Date().toISOString(),
-      isStreaming: activeStreams.has(camera.id)
+      lastSeen: camera.last_seen || new Date().toISOString(),
+      isStreaming: activeStreams.has(camera.id) || camera.is_streaming || false
     }));
   } catch (error) {
     console.error('Error fetching cameras:', error);

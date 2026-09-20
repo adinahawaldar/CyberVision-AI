@@ -1,14 +1,27 @@
-// Mock data for health status
-
+// Live & fallback data for health status
 import { HealthStatus } from '@/lib/types';
 
-// Function to simulate API call with some delay
-export const getHealthStatus = (): Promise<HealthStatus> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(mockHealthStatus);
-    }, 800);
-  });
+const API_BASE_URL = 'http://localhost:8000/api/v1';
+
+// Function to fetch live health status from FastAPI backend with fallback
+export const getHealthStatus = async (): Promise<HealthStatus> => {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const response = await fetch(`${API_BASE_URL}/health`, {
+      signal: controller.signal,
+      cache: 'no-store'
+    });
+    clearTimeout(timeoutId);
+
+    if (response.ok) {
+      const data = await response.json();
+      return data as HealthStatus;
+    }
+  } catch (err) {
+    // If backend is offline or starting, gracefully fall back to mock data
+  }
+  return mockHealthStatus;
 };
 
 const mockHealthStatus: HealthStatus = {

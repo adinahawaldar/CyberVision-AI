@@ -163,20 +163,40 @@ export default function CamerasPage() {
           {view === 'grid' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredCameras.map(camera => (
-                <Card key={camera.id}>
+                <Card key={camera.id} className="overflow-hidden">
                   <CardHeader className="pb-2">
-                    <CardTitle>{camera.name}</CardTitle>
+                    <CardTitle className="truncate">{camera.name}</CardTitle>
                     <CardDescription>{camera.location}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="aspect-video bg-muted rounded-md flex items-center justify-center">
-                      <p className="text-muted-foreground">Camera preview</p>
+                    <div className="aspect-video bg-black rounded-md flex items-center justify-center overflow-hidden relative group">
+                      {camera.status === 'online' ? (
+                        <img 
+                          src={`http://localhost:8000/api/v1/streaming/live/${camera.id}`} 
+                          alt={camera.name}
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="text-center p-4">
+                          <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider">Feed Offline</p>
+                        </div>
+                      )}
+                      <div className="absolute top-2 left-2">
+                        <Badge variant={camera.status === 'online' ? 'default' : 'secondary'} className="h-5 text-xs">
+                          {camera.status === 'online' ? 'LIVE' : 'OFFLINE'}
+                        </Badge>
+                      </div>
                     </div>
-                    <div className="mt-2 flex items-center justify-between">
-                      <Badge variant={camera.status === 'online' ? 'default' : 'secondary'}>
-                        {camera.status}
-                      </Badge>
-                      <Button size="sm" variant="outline">View</Button>
+                    <div className="mt-3 flex items-center justify-between">
+                      <div className="text-xs text-muted-foreground font-mono">
+                        {camera.model || 'Vision Cam'}
+                      </div>
+                      <Button size="sm" variant="outline" asChild>
+                        <a href={`/dashboard/cameras/live?id=${camera.id}`}>View Live</a>
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

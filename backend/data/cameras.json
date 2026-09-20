@@ -1,0 +1,79 @@
+[
+  {
+    "id": "cam-webcam-0",
+    "name": "Camera 01 - Main Entrance (Webcam)",
+    "rtsp_url": "0",
+    "location": "Main Entrance",
+    "status": "online",
+    "stream_url": "http://localhost:8000/api/v1/streaming/live/cam-webcam-0",
+    "hls_url": "http://localhost:8000/api/v1/streaming/live/cam-webcam-0",
+    "thumbnail_url": "/api/v1/streaming/snapshot/cam-webcam-0",
+    "model": "HD Integrated Webcam",
+    "is_streaming": true,
+    "filters": [
+      {
+        "filter_id": "yolo-person-1",
+        "filter_name": "Attendance",
+        "enabled": true
+      },
+      {
+        "filter_id": "yolo-vehicle-2",
+        "filter_name": "VehicleDetection",
+        "enabled": true
+      },
+      {
+        "filter_id": "yolo-auth-3",
+        "filter_name": "authorized_entry",
+        "enabled": true
+      },
+      {
+        "filter_id": "yolo-vision-4",
+        "filter_name": "OllamaVision",
+        "enabled": true
+      }
+    ]
+  },
+  {
+    "id": "cam-synthetic-2",
+    "name": "Camera 02 - Perimeter Patrol",
+    "rtsp_url": "synth:perimeter",
+    "location": "Perimeter North",
+    "status": "online",
+    "stream_url": "http://localhost:8000/api/v1/streaming/live/cam-synthetic-2",
+    "hls_url": "http://localhost:8000/api/v1/streaming/live/cam-synthetic-2",
+    "thumbnail_url": "/api/v1/streaming/snapshot/cam-synthetic-2",
+    "model": "CyberVision 4K PTZ",
+    "is_streaming": true,
+    "filters": [
+      {
+        "filter_id": "filter-animal-1",
+        "filter_name": "AnimalDetection",
+        "enabled": true
+      },
+      {
+        "filter_id": "filter-vehicle-2",
+        "filter_name": "VehicleDetection",
+        "enabled": true
+      }
+    ]
+  },
+  {
+    "id": "cam-synthetic-3",
+    "name": "Camera 03 - Server Vault",
+    "rtsp_url": "synth:vault",
+    "location": "Secure Server Room",
+    "status": "online",
+    "stream_url": "http://localhost:8000/api/v1/streaming/live/cam-synthetic-3",
+    "hls_url": "http://localhost:8000/api/v1/streaming/live/cam-synthetic-3",
+    "thumbnail_url": "/api/v1/streaming/snapshot/cam-synthetic-3",
+    "model": "Infrared Secure Dome",
+    "is_streaming": true,
+    "filters": [
+      {
+        "filter_id": "filter-auth-4",
+        "filter_name": "authorized_entry",
+        "enabled": true
+      }
+    ]
+  }
+]

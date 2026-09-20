@@ -1,0 +1,54 @@
+[
+  {
+    "id": "rule-auth-entry-01",
+    "name": "Authorized Personnel Verification",
+    "cameraId": "cam-webcam-0",
+    "cameraName": "Camera 01 - Main Entrance (Webcam)",
+    "event": "authorized_entry",
+    "condition": {
+      "type": "attendance",
+      "data": {
+        "role": "employee",
+        "entryTimeStart": "08:00",
+        "entryTimeEnd": "19:00",
+        "intervalCheck": true
+      }
+    },
+    "action": "notify",
+    "enabled": true,
+    "schedule": "08:00 - 19:00",
+    "days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri"
+    ]
+  },
+  {
+    "id": "rule-vehicle-02",
+    "name": "Restricted Vehicle Detection",
+    "cameraId": null,
+    "cameraName": "All Cameras",
+    "event": "vehicle_recognized",
+    "condition": {
+      "type": "vehicle",
+      "data": {
+        "role": "restricted",
+        "licensePlatePattern": "*"
+      }
+    },
+    "action": "trigger_alarm",
+    "enabled": true,
+    "schedule": "24/7",
+    "days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun"
+    ]
+  }
+]

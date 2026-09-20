@@ -1,35 +1,79 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# Dependencies
 /node_modules
 /.pnp
 .pnp.js
 
-# testing
-/coverage
+# Environment & Secrets (Never commit credentials to public repo)
+.env
+.env*.local
+.env.development
+.env.test
+.env.production
+*.pem
+*.key
+*.cert
 
-# next.js
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# Large Model Weights (Auto-downloaded by Ultralytics YOLOv8 on first run)
+*.pt
+*.pth
+*.onnx
+*.engine
+*.weights
+*.bin
+
+# User Uploads & Media Files (Privacy & Repository Size)
+backend/data/uploads/*
+!backend/data/uploads/.gitkeep
+*.mp4
+*.avi
+*.mov
+*.mkv
+temp_*.mp4
+
+# Next.js & Build Outputs
 /.next/
 /out/
+/build/
+/dist/
 
-# production
-/build
+# Testing & Coverage
+/coverage/
+.pytest_cache/
 
-# misc
-.DS_Store
-*.pem
-
-# debug
+# Debug Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
-# local env files
-.env*.local
+# IDE & Editor Preferences
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
 
-# vercel
-.vercel
-
-# typescript
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Vercel
+.vercel

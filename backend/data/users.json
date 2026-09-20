@@ -1,0 +1,22 @@
+[
+  {
+    "id": "user-admin-1",
+    "full_name": "Chief Security Officer",
+    "username": "admin",
+    "age": 34,
+    "role": "admin",
+    "photo_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces",
+    "lastDetection": "Just now",
+    "message": "System Administrator"
+  },
+  {
+    "id": "user-worker-2",
+    "full_name": "Adina Hawaldar",
+    "username": "adina",
+    "age": 22,
+    "role": "worker",
+    "photo_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces",
+    "lastDetection": "10 minutes ago",
+    "message": "Surveillance Operator"
+  }
+]

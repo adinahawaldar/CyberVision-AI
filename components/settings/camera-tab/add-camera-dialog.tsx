@@ -39,8 +39,7 @@ import {
 // Form schema for adding a camera
 const addCameraSchema = z.object({
   name: z.string().min(1, { message: 'Camera name is required' }),
-  rtsp_url: z.string().min(1, { message: 'RTSP URL is required' })
-    .regex(/^rtsp:\/\//, { message: 'URL must start with rtsp://' }),
+  rtsp_url: z.string().min(1, { message: 'Camera source or URL is required' }),
 });
 
 export type AddCameraFormValues = z.infer<typeof addCameraSchema>;
@@ -163,12 +162,12 @@ export default function AddCameraDialog({ onCameraAdded }: AddCameraDialogProps)
               name="rtsp_url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>RTSP URL</FormLabel>
+                  <FormLabel>Camera Source / RTSP URL</FormLabel>
                   <FormControl>
-                    <Input placeholder="rtsp://username:password@192.168.1.100:554/stream" {...field} />
+                    <Input placeholder="0 (for Webcam) or rtsp://192.168.1.100:554/live" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Format: rtsp://username:password@host:port/path or rtsp://host:port/path
+                    Enter 0 for local/integrated webcam, or rtsp:// / http:// stream URL
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

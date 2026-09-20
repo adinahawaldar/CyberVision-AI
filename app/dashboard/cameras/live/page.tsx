@@ -1,184 +1,298 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSearchParams } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Grid, Layout, Maximize2, Minimize2, Settings2, Pause, Play } from "lucide-react";
+import { 
+  Grid, 
+  Maximize2, 
+  Minimize2, 
+  Pause, 
+  Play, 
+  Eye, 
+  EyeOff, 
+  Sparkles,
+  RefreshCw,
+  Camera as CameraIcon
+} from "lucide-react";
+import { getCamerasClient } from "@/lib/data/cameras";
+import { Camera } from "@/lib/types";
 
-// Demo camera data
-const DEMO_CAMERAS = [
-  { id: "camera-1", name: "Front Door", location: "Main Entrance", status: "online" },
-  { id: "camera-2", name: "Backyard", location: "Garden Area", status: "online" },
-  { id: "camera-3", name: "Living Room", location: "First Floor", status: "online" },
-  { id: "camera-4", name: "Garage", location: "East Wing", status: "offline" },
-  { id: "camera-5", name: "Kitchen", location: "Ground Floor", status: "online" },
-  { id: "camera-6", name: "Driveway", location: "Front Area", status: "online" }
+// Fallback demo cameras
+const DEFAULT_CAMERAS: Camera[] = [
+  { 
+    id: "cam-webcam-0", 
+    name: "Camera 01 - Main Entrance (Webcam)", 
+    location: "Main Entrance", 
+    status: "online",
+    streamUrl: "http://localhost:8000/api/v1/streaming/live/cam-webcam-0",
+    hlsUrl: "http://localhost:8000/api/v1/streaming/live/cam-webcam-0",
+    thumbnailUrl: "/camera-placeholder.jpg",
+    aiFeatures: [],
+    model: "HD Integrated Webcam",
+    isStreaming: true
+  },
+  { 
+    id: "cam-synthetic-2", 
+    name: "Camera 02 - Perimeter Patrol", 
+    location: "Perimeter North", 
+    status: "online",
+    streamUrl: "http://localhost:8000/api/v1/streaming/live/cam-synthetic-2",
+    hlsUrl: "http://localhost:8000/api/v1/streaming/live/cam-synthetic-2",
+    thumbnailUrl: "/camera-placeholder.jpg",
+    aiFeatures: [],
+    model: "CyberVision 4K PTZ",
+    isStreaming: true
+  },
+  { 
+    id: "cam-synthetic-3", 
+    name: "Camera 03 - Server Vault", 
+    location: "Secure Server Room", 
+    status: "online",
+    streamUrl: "http://localhost:8000/api/v1/streaming/live/cam-synthetic-3",
+    hlsUrl: "http://localhost:8000/api/v1/streaming/live/cam-synthetic-3",
+    thumbnailUrl: "/camera-placeholder.jpg",
+    aiFeatures: [],
+    model: "Infrared Secure Dome",
+    isStreaming: true
+  }
 ];
 
-// Demo placeholder images
-const PLACEHOLDER_IMAGES = [
-  "https://images.unsplash.com/photo-1568992687947-868a62a9f521?q=80&w=1200&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1596394723269-b2cbca4e6e33?q=80&w=1200&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1580983218765-f663bec07b37?q=80&w=1200&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1579747025935-f5f290a60298?q=80&w=1200&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1582271903443-af164af7706a?q=80&w=1200&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1596316121783-7ac8fa9c72fe?q=80&w=1200&auto=format&fit=crop"
-];
-
-/**
- * Demo Video Camera Component
- */
-const DemoVideoCamera: React.FC<{
-  camera: typeof DEMO_CAMERAS[0];
-  imageUrl: string;
+interface LiveCameraFeedProps {
+  camera: Camera;
   isFullscreen: boolean;
+  withDetection: boolean;
   onToggleFullscreen: (id: string) => void;
-}> = ({ camera, imageUrl, isFullscreen, onToggleFullscreen }) => {
-  const [isPlaying, setIsPlaying] = useState(true);
-  
-  return (
-    <Card className={`overflow-hidden ${isFullscreen ? 'fixed inset-0 z-50 h-screen w-screen rounded-none' : 'h-full'}`}>
-      <div className="relative h-full">
-        {/* Demo "Video" */}
-        <div className="relative aspect-video h-full w-full bg-black">
-          <div className={`absolute inset-0 transition-opacity ${isPlaying ? 'opacity-100' : 'opacity-80 grayscale'}`}>
-            <img 
-              src={imageUrl} 
-              alt={camera.name} 
-              className="h-full w-full object-cover"
-            />
-          </div>
-          
-          {/* Camera Status Indicator */}
-          <div className="absolute top-2 left-2 flex items-center gap-2">
-            <Badge variant={camera.status === "online" ? "default" : "destructive"} className="h-5 px-2 py-0">
-              {camera.status === "online" ? "LIVE" : "OFFLINE"}
-            </Badge>
-            <Badge variant="outline" className="bg-black/50 text-white">
-              {camera.location}
-            </Badge>
-          </div>
+  onToggleDetection: (id: string) => void;
+}
 
-          {/* Camera Controls */}
-          <div className="absolute bottom-2 right-2 flex gap-2">
-            <Button 
-              size="icon" 
-              variant="outline" 
-              className="h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/70"
-              onClick={() => setIsPlaying(!isPlaying)}
-            >
-              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
-            </Button>
-            <Button 
-              size="icon" 
-              variant="outline" 
-              className="h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/70"
-              onClick={() => onToggleFullscreen(camera.id)}
-            >
-              {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-            </Button>
-            <Button 
-              size="icon" 
-              variant="outline" 
-              className="h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/70"
-            >
-              <Settings2 size={16} />
-            </Button>
-          </div>
-          
-          {/* Camera Name */}
-          <div className="absolute bottom-2 left-2">
-            <h4 className="rounded bg-black/50 px-2 py-1 text-sm font-medium text-white">
-              {camera.name}
-            </h4>
-          </div>
-          
-          {/* "Loading" indicator for demo */}
-          {!isPlaying && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/5">
-              <span className="rounded-md bg-black/60 px-3 py-1 text-sm text-white">
-                Stream Paused
-              </span>
+const LiveCameraFeed: React.FC<LiveCameraFeedProps> = ({
+  camera,
+  isFullscreen,
+  withDetection,
+  onToggleFullscreen,
+  onToggleDetection
+}) => {
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [hasError, setHasError] = useState(false);
+
+  // MJPEG stream URL from FastAPI backend
+  const streamUrl = `http://localhost:8000/api/v1/streaming/live/${camera.id}${withDetection ? '' : '?raw=true'}`;
+
+  return (
+    <Card className={`overflow-hidden border border-border/40 bg-zinc-950/80 transition-all ${
+      isFullscreen ? 'fixed inset-0 z-50 h-screen w-screen rounded-none bg-black' : 'h-full'
+    }`}>
+      <div className="relative h-full flex flex-col">
+        {/* Live Video Feed Container */}
+        <div className="relative aspect-video h-full w-full bg-black overflow-hidden flex items-center justify-center">
+          {isPlaying && !hasError ? (
+            <img 
+              src={streamUrl} 
+              alt={camera.name} 
+              className="h-full w-full object-cover select-none"
+              onError={() => setHasError(true)}
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center p-6 text-center space-y-2">
+              <CameraIcon className="w-10 h-10 text-muted-foreground/50 animate-pulse" />
+              <p className="text-sm font-mono text-muted-foreground">
+                {hasError ? "Connecting to Camera Feed..." : "Feed Paused"}
+              </p>
+              {hasError && (
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="h-7 text-xs"
+                  onClick={() => setHasError(false)}
+                >
+                  <RefreshCw className="w-3 h-3 mr-1" /> Retry
+                </Button>
+              )}
             </div>
           )}
+
+          {/* HUD Overlay - Top Left */}
+          <div className="absolute top-2 left-2 flex items-center gap-2">
+            <Badge 
+              variant={camera.status === "online" && !hasError ? "default" : "destructive"} 
+              className="h-5 px-2 py-0 text-[10px] font-mono tracking-wider font-semibold"
+            >
+              {camera.status === "online" && !hasError ? "● LIVE" : "OFFLINE"}
+            </Badge>
+            <Badge variant="outline" className="bg-black/60 text-zinc-300 backdrop-blur-sm border-zinc-700 text-xs">
+              {camera.location}
+            </Badge>
+            {withDetection && (
+              <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-500/40 text-[10px] flex items-center gap-1">
+                <Sparkles className="w-2.5 h-2.5" /> YOLOv8 AI
+              </Badge>
+            )}
+          </div>
+
+          {/* HUD Overlay - Bottom Controls */}
+          <div className="absolute bottom-2 right-2 flex gap-1.5 backdrop-blur-md bg-black/50 p-1 rounded-full border border-white/10">
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              className="h-7 w-7 rounded-full text-white hover:bg-white/20"
+              title={withDetection ? "Turn Off AI Overlays" : "Turn On AI Overlays"}
+              onClick={() => onToggleDetection(camera.id)}
+            >
+              {withDetection ? <Eye size={14} className="text-cyan-400" /> : <EyeOff size={14} />}
+            </Button>
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              className="h-7 w-7 rounded-full text-white hover:bg-white/20"
+              title={isPlaying ? "Pause Stream" : "Play Stream"}
+              onClick={() => setIsPlaying(!isPlaying)}
+            >
+              {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+            </Button>
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              className="h-7 w-7 rounded-full text-white hover:bg-white/20"
+              title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+              onClick={() => onToggleFullscreen(camera.id)}
+            >
+              {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+            </Button>
+          </div>
+          
+          {/* Camera Name Label */}
+          <div className="absolute bottom-2 left-2">
+            <div className="rounded bg-black/70 backdrop-blur-md px-2 py-1 text-xs font-medium text-white border border-white/10">
+              {camera.name}
+            </div>
+          </div>
         </div>
       </div>
     </Card>
   );
 };
 
-/**
- * LiveView Page Component - Demo Version
- */
 export default function LiveViewPage() {
-  const [gridLayout, setGridLayout] = useState<"2x2" | "3x3">("2x2");
-  const [fullscreenCamera, setFullscreenCamera] = useState<string | null>(null);
-
-  // Simulate loading time
-  const [isLoading, setIsLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const spotlightId = searchParams.get("id");
   
-  useEffect(() => {
-    // Simulate initial loading
-    const timer = setTimeout(() => {
+  const [cameras, setCameras] = useState<Camera[]>([]);
+  const [gridLayout, setGridLayout] = useState<"2x2" | "3x3">("2x2");
+  const [fullscreenCamera, setFullscreenCamera] = useState<string | null>(spotlightId);
+  const [detectionStates, setDetectionStates] = useState<Record<string, boolean>>({});
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchLiveCameras = async () => {
+    setIsLoading(true);
+    try {
+      const data = await getCamerasClient();
+      if (data && data.length > 0) {
+        setCameras(data);
+      } else {
+        setCameras(DEFAULT_CAMERAS);
+      }
+    } catch (e) {
+      console.error("Failed to load cameras, using default fallback:", e);
+      setCameras(DEFAULT_CAMERAS);
+    } finally {
       setIsLoading(false);
-    }, 1500);
-    
-    return () => clearTimeout(timer);
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveCameras();
   }, []);
 
-  // Toggle fullscreen for a specific camera
   const toggleFullscreen = (cameraId: string) => {
     setFullscreenCamera(fullscreenCamera === cameraId ? null : cameraId);
   };
 
-  // If a camera is fullscreen, only show that camera
+  const toggleDetection = async (cameraId: string) => {
+    const currentState = detectionStates[cameraId] !== false; // default true
+    const newState = !currentState;
+    
+    setDetectionStates(prev => ({
+      ...prev,
+      [cameraId]: newState
+    }));
+
+    try {
+      await fetch(`http://localhost:8000/api/v1/streaming/start/${cameraId}?with_detection=${newState}`, {
+        method: 'POST'
+      });
+    } catch (err) {
+      console.error("Error updating detection state on backend:", err);
+    }
+  };
+
   const visibleCameras = fullscreenCamera 
-    ? DEMO_CAMERAS.filter(cam => cam.id === fullscreenCamera)
-    : DEMO_CAMERAS.slice(0, gridLayout === "2x2" ? 4 : 9);
+    ? cameras.filter(cam => cam.id === fullscreenCamera)
+    : cameras.slice(0, gridLayout === "2x2" ? 4 : 9);
 
   return (
     <div className="flex h-full w-full flex-col space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Live View</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Live Surveillance View</h1>
           <p className="text-muted-foreground">
-            Monitor your cameras in real-time
+            Multi-camera matrix with real-time YOLOv8 object detection & security tracking.
           </p>
         </div>
         
         <div className="flex items-center gap-2">
-          <Tabs defaultValue="all" className="w-[300px]">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="indoor">Indoor</TabsTrigger>
-              <TabsTrigger value="outdoor">Outdoor</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          
+          {fullscreenCamera && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setFullscreenCamera(null)}
+              className="text-xs font-mono"
+            >
+              Exit Spotlight View
+            </Button>
+          )}
+
           <Button
             variant="outline"
             size="icon"
-            onClick={() => setGridLayout(gridLayout === "2x2" ? "3x3" : "2x2")}
+            title="Refresh Feeds"
+            onClick={fetchLiveCameras}
           >
-            <Grid size={18} />
+            <RefreshCw size={16} />
+          </Button>
+
+          <Button
+            variant={gridLayout === "2x2" ? "default" : "outline"}
+            size="icon"
+            onClick={() => setGridLayout("2x2")}
+            title="2x2 Matrix"
+          >
+            <Grid size={16} />
           </Button>
           
           <Button
-            variant="outline"
+            variant={gridLayout === "3x3" ? "default" : "outline"}
             size="icon"
+            onClick={() => setGridLayout("3x3")}
+            title="3x3 Matrix"
           >
-            <Layout size={18} />
+            <div className="grid grid-cols-3 gap-0.5 w-3.5 h-3.5">
+              {[...Array(9)].map((_, i) => (
+                <div key={i} className="bg-current rounded-[1px]" />
+              ))}
+            </div>
           </Button>
         </div>
       </div>
       
       {isLoading ? (
-        <div className="flex h-[500px] items-center justify-center">
-          <div className="flex flex-col items-center gap-2">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-            <p className="text-sm text-muted-foreground">Loading camera feeds...</p>
+        <div className="flex h-[450px] items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+            <p className="text-sm font-mono text-muted-foreground">Initializing camera video pipeline...</p>
           </div>
         </div>
       ) : (
@@ -187,43 +301,47 @@ export default function LiveViewPage() {
             fullscreenCamera 
               ? 'grid-cols-1' 
               : gridLayout === "2x2" 
-                ? 'grid-cols-1 sm:grid-cols-2'
-                : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+                ? 'grid-cols-1 md:grid-cols-2'
+                : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
           }`}
         >
-          {visibleCameras.map((camera, index) => (
-            <DemoVideoCamera
+          {visibleCameras.map((camera) => (
+            <LiveCameraFeed
               key={camera.id}
               camera={camera}
-              imageUrl={PLACEHOLDER_IMAGES[index % PLACEHOLDER_IMAGES.length]}
+              withDetection={detectionStates[camera.id] !== false}
               isFullscreen={fullscreenCamera === camera.id}
               onToggleFullscreen={toggleFullscreen}
+              onToggleDetection={toggleDetection}
             />
           ))}
         </div>
       )}
       
-      {/* Camera stats */}
-      <Card className="mt-auto">
-        <CardHeader className="py-3">
-          <CardTitle className="text-sm font-medium">Camera Statistics</CardTitle>
+      {/* Node Metrics Bar */}
+      <Card className="mt-auto border-border/40">
+        <CardHeader className="py-2.5">
+          <CardTitle className="text-xs uppercase tracking-wider font-mono text-muted-foreground flex items-center justify-between">
+            <span>Surveillance Node Feed Metrics</span>
+            <span className="text-emerald-500 font-semibold">● Vision Engine Online</span>
+          </CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-4 gap-4 py-2 text-center">
-          <div>
-            <p className="text-xs text-muted-foreground">Total Cameras</p>
-            <p className="text-lg font-bold">{DEMO_CAMERAS.length}</p>
+        <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-2 text-center font-mono">
+          <div className="p-2 rounded bg-zinc-900/50">
+            <p className="text-[11px] text-muted-foreground">Monitored Feeds</p>
+            <p className="text-lg font-bold text-foreground">{cameras.length}</p>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Online</p>
-            <p className="text-lg font-bold">{DEMO_CAMERAS.filter(c => c.status === "online").length}</p>
+          <div className="p-2 rounded bg-zinc-900/50">
+            <p className="text-[11px] text-muted-foreground">Active Streams</p>
+            <p className="text-lg font-bold text-emerald-400">{cameras.filter(c => c.status === "online").length}</p>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Offline</p>
-            <p className="text-lg font-bold">{DEMO_CAMERAS.filter(c => c.status === "offline").length}</p>
+          <div className="p-2 rounded bg-zinc-900/50">
+            <p className="text-[11px] text-muted-foreground">Inference Model</p>
+            <p className="text-lg font-bold text-cyan-400">YOLOv8</p>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Storage Used</p>
-            <p className="text-lg font-bold">42%</p>
+          <div className="p-2 rounded bg-zinc-900/50">
+            <p className="text-[11px] text-muted-foreground">Streaming Engine</p>
+            <p className="text-lg font-bold text-amber-400">MJPEG / HLS</p>
           </div>
         </CardContent>
       </Card>

@@ -115,20 +115,21 @@ export default function TestPage() {
     setResult(null);
 
     try {
-      // Mocked API processing - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock response based on prompt keywords
-      let mockResponse = "Analysis complete.";
-      if (prompt.toLowerCase().includes('bag') || prompt.toLowerCase().includes('bags')) {
-        mockResponse = "I detected 12 gunny bags in the video.";
-      } else if (prompt.toLowerCase().includes('car') || prompt.toLowerCase().includes('vehicle')) {
-        mockResponse = "I found 5 vehicles in the video: 3 sedans and 2 SUVs. All vehicles match the database records.";
-      } else if (prompt.toLowerCase().includes('people') || prompt.toLowerCase().includes('person')) {
-        mockResponse = "I detected 8 people in the video footage.";
+      const formData = new FormData();
+      formData.append('video', uploadedVideo);
+      formData.append('prompt', prompt);
+
+      const response = await fetch('http://localhost:8000/api/v1/contextual/analyze-video', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned status ${response.status}`);
       }
-      
-      setResult(mockResponse);
+
+      const data = await response.json();
+      setResult(data.response || "No response received from video analysis.");
       toast({
         title: "Processing complete",
         description: "Video analysis has finished",
