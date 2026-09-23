@@ -151,7 +151,7 @@ export default function Hero() {
             onClick={handleViewPlatform}
             className="w-full sm:w-auto h-10 sm:h-11 px-6 rounded-full bg-white hover:bg-slate-100 text-black font-semibold text-xs sm:text-sm transition-all shadow-sm hover:shadow flex items-center justify-center space-x-2 cursor-pointer group"
           >
-            <span>View Platform</span>
+            <span>Get Started</span>
             <ArrowRight className="w-3.5 h-3.5 text-black group-hover:translate-x-0.5 transition-transform" />
           </Button>
 

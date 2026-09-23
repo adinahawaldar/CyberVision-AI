@@ -9,8 +9,8 @@ import { Shield, ArrowLeft, Loader2, ChevronRight, Globe } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("admin@cybervision.ai");
-  const [password, setPassword] = useState("password123");
+  const [username, setUsername] = useState("admin");
+  const [password, setPassword] = useState("admin");
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
@@ -20,7 +20,7 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await login(username || "admin", password || "password");
+      await login(username || "admin", password || "admin");
       toast({
         title: "Access Granted",
         description: "Welcome back to CyberVision AI Command Console",
@@ -29,7 +29,7 @@ export default function LoginPage() {
     } catch (error) {
       toast({
         title: "Login Failed",
-        description: "Please check your credentials",
+        description: "Please check your credentials (admin / admin)",
         variant: "destructive",
       });
     } finally {
@@ -40,7 +40,7 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      await login("admin@cybervision.ai", "google_sso");
+      await login("admin", "admin");
       toast({
         title: "Google SSO Success",
         description: "Redirecting to CyberVision AI Dashboard...",
@@ -155,7 +155,7 @@ export default function LoginPage() {
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="admin@cybervision.ai"
+                  placeholder="admin"
                   className="w-full px-4 py-3 rounded-xl border border-white/10 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#ff3538]/30 focus:border-[#ff3538] transition-all bg-slate-900/80"
                   disabled={isLoading}
                 />
