@@ -19,24 +19,25 @@ export default function WorkflowVideo() {
 
         {/* SECTION HEADER */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.2 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="text-center max-w-3xl mx-auto mb-10 sm:mb-14 space-y-3"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center max-w-4xl mx-auto mb-10 sm:mb-14 space-y-3"
         >
 
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white leading-tight">
-            The Investigation Starts With the Footage          </h2>
+          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white uppercase leading-tight">
+            THE INVESTIGATION STARTS WITH THE FOOTAGE
+          </h2>
 
         </motion.div>
 
         {/* FULL-WIDTH VIDEO SHOWCASE CONTAINER */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 30 }}
-          whileInView={{ opacity: 1, scale: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.15 }}
-          transition={{ duration: 0.8, type: "spring", stiffness: 80 }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
           className="w-full max-w-7xl mx-auto"
         >
           <div className="relative aspect-video sm:aspect-[21/9] sm:min-h-[480px] w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 bg-[#0d0f14] shadow-2xl group flex flex-col justify-between p-4 sm:p-6">

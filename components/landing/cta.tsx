@@ -24,11 +24,7 @@ export default function CTA() {
 
       {/* Background Ambient Aura Glow */}
       <div className="absolute inset-0 pointer-events-none z-0 flex justify-center items-center">
-        <motion.div
-          animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="w-[600px] h-[350px] bg-[#ff3538]/20 rounded-full blur-[140px]"
-        />
+        <div className="w-[600px] h-[350px] bg-[#ff3538]/20 rounded-full blur-[140px]" />
       </div>
 
       {/* Background Curved Silhouette matching Hero section */}
@@ -47,28 +43,20 @@ export default function CTA() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
         <motion.div
-          initial={{ opacity: 0, scale: 0.85, y: 50 }}
-          whileInView={{ opacity: 1, scale: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.2 }}
-          transition={{ duration: 0.9, type: "spring", stiffness: 80 }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
           className="rounded-3xl border border-white/15 bg-[#161820]/90 p-6 sm:p-8 lg:p-10 shadow-2xl backdrop-blur-xl text-center space-y-5 relative overflow-hidden"
         >
 
-
-
-          {/* High-Impact Hero-Style Heading */}
+          {/* High-Impact Heading */}
           <div className="space-y-3 max-w-3xl mx-auto select-none">
-            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white leading-tight">
+            <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-tight">
               READY TO UPGRADE YOUR{" "}
-              <motion.span
-                initial={{ scale: 0.6, rotate: -5 }}
-                whileInView={{ scale: 1, rotate: -1 }}
-                viewport={{ once: false, amount: 0.2 }}
-                transition={{ duration: 0.7, delay: 0.2, type: "spring" }}
-                className="inline-block bg-[#ff3538] text-white px-3 sm:px-4 py-0.5 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgba(255,53,56,0.55)] hover:rotate-0 transition-transform my-0.5"
-              >
+              <span className="inline-block bg-[#ff3538] text-white px-3 sm:px-4 py-0.5 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgba(255,53,56,0.55)] my-0.5">
                 SURVEILLANCE
-              </motion.span>{" "}
+              </span>{" "}
               INTELLIGENCE?
             </h2>
 
@@ -79,15 +67,15 @@ export default function CTA() {
 
           {/* Minimal Height White CTA Button */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.2 }}
-            transition={{ duration: 0.7, delay: 0.4 }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.15 }}
             className="pt-1 flex justify-center"
           >
             <Button
               onClick={handleDashboardClick}
-              className="h-10 sm:h-11 px-6 sm:px-8 rounded-full bg-white hover:bg-slate-100 text-black font-extrabold text-xs uppercase tracking-wider transition-all hover:scale-110 shadow-lg flex items-center space-x-2 cursor-pointer border-0 group"
+              className="h-10 sm:h-11 px-6 sm:px-8 rounded-full bg-white hover:bg-slate-100 text-black font-extrabold text-xs uppercase tracking-wider transition-all hover:scale-105 shadow-lg flex items-center space-x-2 cursor-pointer border-0 group"
             >
               <span>GET STARTED NOW</span>
               <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform" />

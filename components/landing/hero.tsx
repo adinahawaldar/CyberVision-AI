@@ -33,32 +33,18 @@ export default function Hero() {
   return (
     <section id="hero" className="relative min-h-[85vh] sm:min-h-screen bg-[#111317] text-white overflow-hidden flex flex-col justify-center items-center py-20 sm:py-24">
 
-      {/* Ambient Pulsing Background Glows */}
+      {/* Ambient Background Glows */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        <motion.div
-          animate={{
-            scale: [1, 1.15, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-cyan-500/10 rounded-full blur-[160px]"
-        />
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.2, 0.45, 0.2],
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#ff3538]/15 rounded-full blur-[150px]"
-        />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-cyan-500/10 rounded-full blur-[160px]" />
+        <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#ff3538]/15 rounded-full blur-[150px]" />
       </div>
 
       {/* Curved Dark Silhouette Overlay in Center Background */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        whileInView={{ opacity: 0.95, scale: 1 }}
-        viewport={{ once: false, amount: 0.2 }}
-        transition={{ duration: 1.2, ease: "easeOut" }}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 0.95 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
         className="absolute inset-0 pointer-events-none z-0 flex justify-center"
       >
         <div className="w-full max-w-7xl h-full relative">
@@ -74,13 +60,13 @@ export default function Hero() {
         </div>
       </motion.div>
 
-      {/* TOP LEFT 3D CAMERA - SCROLL IN ANIMATION */}
+      {/* TOP LEFT 3D CAMERA */}
       <motion.div
-        initial={{ opacity: 0, x: -120, y: -60, rotate: -15 }}
-        whileInView={{ opacity: 1, x: 0, y: 0, rotate: 0 }}
-        viewport={{ once: false, amount: 0.2 }}
-        transition={{ duration: 1.1, type: "spring", stiffness: 70 }}
-        className="absolute top-4 sm:top-0 left-0 z-10 w-40 sm:w-56 md:w-64 lg:w-[350px] pointer-events-none opacity-50 sm:opacity-75"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 0.75 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="absolute top-4 sm:top-0 left-0 z-10 w-40 sm:w-56 md:w-64 lg:w-[350px] pointer-events-none"
       >
         <motion.div
           animate={{ y: [0, -12, 0], rotate: [0, -2, 0] }}
@@ -99,13 +85,13 @@ export default function Hero() {
         </motion.div>
       </motion.div>
 
-      {/* TOP RIGHT 3D CAMERA - SCROLL IN ANIMATION */}
+      {/* TOP RIGHT 3D CAMERA */}
       <motion.div
-        initial={{ opacity: 0, x: 120, y: -60, rotate: 15 }}
-        whileInView={{ opacity: 1, x: 0, y: 0, rotate: 0 }}
-        viewport={{ once: false, amount: 0.2 }}
-        transition={{ duration: 1.1, type: "spring", stiffness: 70 }}
-        className="absolute top-4 sm:top-0 right-0 z-10 w-40 sm:w-56 md:w-64 lg:w-[350px] pointer-events-none opacity-50 sm:opacity-75"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 0.75 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="absolute top-4 sm:top-0 right-0 z-10 w-40 sm:w-56 md:w-64 lg:w-[350px] pointer-events-none"
       >
         <motion.div
           animate={{ y: [0, -14, 0], rotate: [0, 2, 0] }}
@@ -129,10 +115,10 @@ export default function Hero() {
 
         {/* PROFESSIONAL HEADLINE */}
         <motion.h1
-          initial={{ opacity: 0, y: 25 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.2 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
           className="font-bold tracking-tight text-3xl sm:text-5xl md:text-6xl text-white max-w-3xl mx-auto leading-tight"
         >
           Turn CCTV footage into{" "}
@@ -143,10 +129,10 @@ export default function Hero() {
 
         {/* SUBTITLE DESCRIPTION */}
         <motion.p
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.2 }}
-          transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.1 }}
           className="text-slate-400 text-xs sm:text-sm md:text-base max-w-xl mx-auto mt-4 leading-relaxed font-normal"
         >
           CyberVision AI detects suspicious activity, generates real-time alerts, and automatically builds structured incident reports from CCTV footage &amp; videos.
@@ -154,10 +140,10 @@ export default function Hero() {
 
         {/* COMPACT ACTION BUTTONS */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.2 }}
-          transition={{ duration: 0.6, delay: 0.25, ease: "easeOut" }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.2 }}
           className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto"
         >
           {/* VIEW PLATFORM BUTTON */}
