@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ShieldAlert, Sparkles } from "lucide-react";
+import { ArrowRight, Play } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -11,13 +11,27 @@ export default function Hero() {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
 
-  const handleActionClick = (e: React.MouseEvent) => {
+  const handleViewPlatform = (e: React.MouseEvent) => {
     e.preventDefault();
-    router.push("/login");
+    if (isAuthenticated) {
+      router.push("/dashboard");
+    } else {
+      router.push("/login");
+    }
+  };
+
+  const handleSeeHowItWorks = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const el = document.getElementById("working");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    } else {
+      router.push("#working");
+    }
   };
 
   return (
-    <section className="relative min-h-[85vh] sm:min-h-screen bg-[#111317] text-white overflow-hidden flex flex-col justify-center items-center py-20">
+    <section id="hero" className="relative min-h-[85vh] sm:min-h-screen bg-[#111317] text-white overflow-hidden flex flex-col justify-center items-center py-20 sm:py-24">
 
       {/* Ambient Pulsing Background Glows */}
       <div className="absolute inset-0 pointer-events-none z-0">
@@ -60,13 +74,13 @@ export default function Hero() {
         </div>
       </motion.div>
 
-      {/* TOP LEFT 3D CAMERA - CRAZY SCROLL IN & UP ANIMATION */}
+      {/* TOP LEFT 3D CAMERA - SCROLL IN ANIMATION */}
       <motion.div
         initial={{ opacity: 0, x: -120, y: -60, rotate: -15 }}
         whileInView={{ opacity: 1, x: 0, y: 0, rotate: 0 }}
         viewport={{ once: false, amount: 0.2 }}
         transition={{ duration: 1.1, type: "spring", stiffness: 70 }}
-        className="absolute top-0 left-0 z-5 w-52 sm:w-64 md:w-72 lg:w-[370px] pointer-events-none"
+        className="absolute top-4 sm:top-0 left-0 z-10 w-40 sm:w-56 md:w-64 lg:w-[350px] pointer-events-none opacity-50 sm:opacity-75"
       >
         <motion.div
           animate={{ y: [0, -12, 0], rotate: [0, -2, 0] }}
@@ -85,13 +99,13 @@ export default function Hero() {
         </motion.div>
       </motion.div>
 
-      {/* TOP RIGHT 3D CAMERA - CRAZY SCROLL IN & UP ANIMATION */}
+      {/* TOP RIGHT 3D CAMERA - SCROLL IN ANIMATION */}
       <motion.div
         initial={{ opacity: 0, x: 120, y: -60, rotate: 15 }}
         whileInView={{ opacity: 1, x: 0, y: 0, rotate: 0 }}
         viewport={{ once: false, amount: 0.2 }}
         transition={{ duration: 1.1, type: "spring", stiffness: 70 }}
-        className="absolute top-0 right-0 z-5 w-52 sm:w-64 md:w-72 lg:w-[370px] pointer-events-none"
+        className="absolute top-4 sm:top-0 right-0 z-10 w-40 sm:w-56 md:w-64 lg:w-[350px] pointer-events-none opacity-50 sm:opacity-75"
       >
         <motion.div
           animate={{ y: [0, -14, 0], rotate: [0, 2, 0] }}
@@ -110,81 +124,59 @@ export default function Hero() {
         </motion.div>
       </motion.div>
 
-      {/* HERO MAIN CONTENT AREA - PERFECTLY CENTERED */}
-      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex flex-col items-center text-center my-auto pt-8">
+      {/* HERO MAIN CONTENT AREA - CENTERED */}
+      <div className="relative z-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex flex-col items-center text-center my-auto pt-6 sm:pt-10">
 
+        {/* PROFESSIONAL HEADLINE */}
+        <motion.h1
+          initial={{ opacity: 0, y: 25 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.2 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="font-bold tracking-tight text-3xl sm:text-5xl md:text-6xl text-white max-w-3xl mx-auto leading-tight"
+        >
+          Turn CCTV footage into{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff3538] to-rose-400">
+            actionable evidence.
+          </span>
+        </motion.h1>
 
-
-        {/* HIGH-IMPACT TYPOGRAPHY "WE SEE MORE" WITH STAGGERED 3D REVEAL */}
-        <div className="relative select-none my-2 sm:my-4">
-          <h1 className="font-black uppercase tracking-tighter leading-[0.88] flex flex-col items-center justify-center font-extrabold">
-
-            {/* "WE" */}
-            <motion.span
-              initial={{ opacity: 0, y: 50, scale: 0.7, rotateX: 60 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
-              viewport={{ once: false, amount: 0.2 }}
-              transition={{ duration: 0.8, type: "spring", stiffness: 90 }}
-              className="text-5xl sm:text-7xl md:text-8xl lg:text-[8.5rem] font-black font-extrabold text-white drop-shadow-[0_10px_25px_rgba(0,0,0,0.95)] tracking-tight"
-            >
-              WE
-            </motion.span>
-
-            {/* "SEE MORE" ROW */}
-            <div className="flex items-center justify-center space-x-2 sm:space-x-4 md:space-x-5 mt-1 sm:mt-2">
-
-              {/* "SEE" Highlight Block in Vibrant Coral-Red with 3D Pop */}
-              <motion.span
-                initial={{ opacity: 0, scale: 0.4, rotate: -15 }}
-                whileInView={{ opacity: 1, scale: 1, rotate: -2 }}
-                viewport={{ once: false, amount: 0.2 }}
-                transition={{ duration: 0.8, delay: 0.25, type: "spring", stiffness: 120 }}
-                className="bg-[#ff3538] text-white px-4 sm:px-6 py-0.5 sm:py-1 rounded-xl sm:rounded-2xl text-4xl sm:text-6xl md:text-7xl lg:text-[7.5rem] font-black font-extrabold tracking-tight shadow-[0_8px_30px_rgba(255,53,56,0.55)] hover:rotate-0 hover:scale-105 transition-all duration-300"
-              >
-                SEE
-              </motion.span>
-
-              {/* "MORE" */}
-              <motion.span
-                initial={{ opacity: 0, y: 50, scale: 0.7, rotateX: 60 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
-                viewport={{ once: false, amount: 0.2 }}
-                transition={{ duration: 0.8, delay: 0.35, type: "spring", stiffness: 90 }}
-                className="text-5xl sm:text-7xl md:text-8xl lg:text-[8.5rem] font-black font-extrabold text-white drop-shadow-[0_10px_25px_rgba(0,0,0,0.95)] tracking-tight"
-              >
-                MORE
-              </motion.span>
-
-            </div>
-          </h1>
-        </div>
-
-        {/* SUBTITLE SPEC */}
+        {/* SUBTITLE DESCRIPTION */}
         <motion.p
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.2 }}
+          transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
+          className="text-slate-400 text-xs sm:text-sm md:text-base max-w-xl mx-auto mt-4 leading-relaxed font-normal"
+        >
+          CyberVision AI detects suspicious activity, generates real-time alerts, and automatically builds structured incident reports from CCTV footage &amp; videos.
+        </motion.p>
+
+        {/* COMPACT ACTION BUTTONS */}
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: false, amount: 0.2 }}
-          transition={{ duration: 0.7, delay: 0.5 }}
-          className="text-slate-400 text-xs sm:text-sm md:text-base max-w-xl mx-auto mt-4 font-mono font-medium tracking-wide"
+          transition={{ duration: 0.6, delay: 0.25, ease: "easeOut" }}
+          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto"
         >
-          Autonomous real-time object tracking • Instant threat alerts • Unified multi-camera intelligence
-        </motion.p>
-
-        {/* GET STARTED CTA BUTTON WITH SPRING EXPANSION */}
-        <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.8 }}
-          whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: false, amount: 0.2 }}
-          transition={{ duration: 0.8, delay: 0.6, type: "spring", stiffness: 100 }}
-          className="mt-8 sm:mt-10"
-        >
+          {/* VIEW PLATFORM BUTTON */}
           <Button
-            onClick={handleActionClick}
-            size="lg"
-            className="bg-white text-black hover:bg-slate-200 font-extrabold tracking-widest text-xs sm:text-sm uppercase px-8 sm:px-10 py-5 sm:py-6 rounded-full shadow-xl shadow-white/20 transition-all duration-300 hover:scale-110 border border-white/80 flex items-center space-x-2 cursor-pointer group"
+            onClick={handleViewPlatform}
+            className="w-full sm:w-auto h-10 sm:h-11 px-6 rounded-full bg-white hover:bg-slate-100 text-black font-semibold text-xs sm:text-sm transition-all shadow-sm hover:shadow flex items-center justify-center space-x-2 cursor-pointer group"
           >
-            <span>GET STARTED</span>
-            <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform" />
+            <span>View Platform</span>
+            <ArrowRight className="w-3.5 h-3.5 text-black group-hover:translate-x-0.5 transition-transform" />
+          </Button>
+
+          {/* SEE HOW IT WORKS BUTTON */}
+          <Button
+            onClick={handleSeeHowItWorks}
+            variant="outline"
+            className="w-full sm:w-auto h-10 sm:h-11 px-6 rounded-full bg-white/5 hover:bg-white/10 text-slate-200 hover:text-white border-white/15 hover:border-white/30 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 cursor-pointer backdrop-blur-sm group"
+          >
+            <Play className="w-3 h-3 text-[#ff3538] fill-[#ff3538] group-hover:scale-110 transition-transform" />
+            <span>See How It Works</span>
           </Button>
         </motion.div>
 
