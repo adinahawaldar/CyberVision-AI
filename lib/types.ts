@@ -5,10 +5,12 @@ export type Camera = {
   status: 'online' | 'offline';
   lastSeen?: string;
   streamUrl: string;
+  hlsUrl?: string;
   thumbnailUrl: string;
   aiFeatures: string[];
   alerts?: string[];
   model?: string;
+  isStreaming?: boolean;
   resolutionWidth?: number;
   resolutionHeight?: number;
   coordinates?: {
