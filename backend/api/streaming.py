@@ -9,15 +9,36 @@ from backend.services.storage import storage
 
 router = APIRouter(prefix="/streaming", tags=["streaming"])
 
+def get_user_id_from_request(request: Request) -> Optional[str]:
+    user_id = request.headers.get("X-User-Id") or request.query_params.get("user_id")
+    if user_id and user_id.strip():
+        return user_id.strip()
+    cookie_user_id = request.cookies.get("cv_user_id")
+    if cookie_user_id and cookie_user_id.strip():
+        return cookie_user_id.strip()
+    return None
+
 @router.get("/")
-async def get_stream_status():
-    """Returns list of all active streams."""
-    return {"active_streams": camera_manager.get_active_streams()}
+async def get_stream_status(request: Request):
+    """Returns list of active streams for requesting user."""
+    user_id = get_user_id_from_request(request)
+    all_streams = camera_manager.get_active_streams()
+    if user_id:
+        user_cam_ids = {c["id"] for c in storage.get_cameras(user_id=user_id)}
+        streams = [s for s in all_streams if s.get("camera_id") in user_cam_ids]
+    else:
+        streams = all_streams
+    return {"active_streams": streams}
 
 @router.get("/stream-urls")
-async def get_stream_urls():
-    """Returns active streams and their stream URLs."""
-    return camera_manager.get_active_streams()
+async def get_stream_urls(request: Request):
+    """Returns active streams and their stream URLs for requesting user."""
+    user_id = get_user_id_from_request(request)
+    all_streams = camera_manager.get_active_streams()
+    if user_id:
+        user_cam_ids = {c["id"] for c in storage.get_cameras(user_id=user_id)}
+        return [s for s in all_streams if s.get("camera_id") in user_cam_ids]
+    return all_streams
 
 @router.post("/start/{camera_id}")
 async def start_camera_stream_by_id(

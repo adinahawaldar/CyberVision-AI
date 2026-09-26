@@ -40,10 +40,13 @@ interface GeneralSettingsProps {
   isSubmitting: boolean;
 }
 
+import { getUserStorageKey } from '@/lib/auth-utils';
+
 // Function to load settings from localStorage
 const loadSettings = (): GeneralFormValues => {
   if (typeof window !== 'undefined') {
-    const savedSettings = localStorage.getItem('generalSettings');
+    const key = getUserStorageKey('generalSettings');
+    const savedSettings = localStorage.getItem(key);
     if (savedSettings) {
       return JSON.parse(savedSettings);
     }
@@ -51,7 +54,7 @@ const loadSettings = (): GeneralFormValues => {
   
   // Default values if no saved settings
   return {
-    systemName: 'SecureView AI',
+    systemName: 'CyberVision AI',
     timezone: 'UTC-5',
     dateFormat: 'MM/DD/YYYY',
     timeFormat: '12h',
@@ -61,7 +64,8 @@ const loadSettings = (): GeneralFormValues => {
 // Function to save settings to localStorage
 const saveSettings = (data: GeneralFormValues) => {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('generalSettings', JSON.stringify(data));
+    const key = getUserStorageKey('generalSettings');
+    localStorage.setItem(key, JSON.stringify(data));
   }
 };
 

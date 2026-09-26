@@ -184,84 +184,103 @@ class StorageManager:
             save_json(NOTIFICATIONS_FILE, default_notifications)
 
     # Camera operations
-    def get_cameras(self) -> List[Dict[str, Any]]:
-        return load_json(CAMERAS_FILE, [])
+    def get_cameras(self, user_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        all_cameras = load_json(CAMERAS_FILE, [])
+        if user_id:
+            return [cam for cam in all_cameras if cam.get("user_id") == user_id]
+        return all_cameras
 
-    def get_camera_by_id(self, camera_id: str) -> Optional[Dict[str, Any]]:
-        cameras = self.get_cameras()
+    def get_camera_by_id(self, camera_id: str, user_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        cameras = self.get_cameras(user_id=user_id)
         for cam in cameras:
             if cam.get("id") == camera_id:
                 return cam
         return None
 
-    def get_camera_by_name(self, name: str) -> Optional[Dict[str, Any]]:
-        cameras = self.get_cameras()
+    def get_camera_by_name(self, name: str, user_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        cameras = self.get_cameras(user_id=user_id)
         for cam in cameras:
             if cam.get("name", "").lower() == name.lower():
                 return cam
         return None
 
-    def save_camera(self, camera_data: Dict[str, Any]) -> Dict[str, Any]:
-        cameras = self.get_cameras()
+    def save_camera(self, camera_data: Dict[str, Any], user_id: Optional[str] = None) -> Dict[str, Any]:
+        all_cameras = load_json(CAMERAS_FILE, [])
         if not camera_data.get("id"):
             camera_data["id"] = f"cam-{uuid.uuid4().hex[:8]}"
+        if user_id and not camera_data.get("user_id"):
+            camera_data["user_id"] = user_id
         
         # Check if already exists to update
         updated = False
-        for i, cam in enumerate(cameras):
+        for i, cam in enumerate(all_cameras):
             if cam.get("id") == camera_data["id"]:
-                cameras[i] = camera_data
+                all_cameras[i] = camera_data
                 updated = True
                 break
         if not updated:
-            cameras.append(camera_data)
+            all_cameras.append(camera_data)
             
-        save_json(CAMERAS_FILE, cameras)
+        save_json(CAMERAS_FILE, all_cameras)
         return camera_data
 
-    def delete_camera(self, camera_id: str) -> bool:
-        cameras = self.get_cameras()
-        initial_len = len(cameras)
-        cameras = [c for c in cameras if c.get("id") != camera_id]
-        if len(cameras) != initial_len:
-            save_json(CAMERAS_FILE, cameras)
+    def delete_camera(self, camera_id: str, user_id: Optional[str] = None) -> bool:
+        all_cameras = load_json(CAMERAS_FILE, [])
+        initial_len = len(all_cameras)
+        if user_id:
+            all_cameras = [c for c in all_cameras if not (c.get("id") == camera_id and c.get("user_id") == user_id)]
+        else:
+            all_cameras = [c for c in all_cameras if c.get("id") != camera_id]
+        if len(all_cameras) != initial_len:
+            save_json(CAMERAS_FILE, all_cameras)
             return True
         return False
 
-    def delete_camera_by_name(self, name: str) -> bool:
-        cameras = self.get_cameras()
-        initial_len = len(cameras)
-        cameras = [c for c in cameras if c.get("name", "").lower() != name.lower()]
-        if len(cameras) != initial_len:
-            save_json(CAMERAS_FILE, cameras)
+    def delete_camera_by_name(self, name: str, user_id: Optional[str] = None) -> bool:
+        all_cameras = load_json(CAMERAS_FILE, [])
+        initial_len = len(all_cameras)
+        if user_id:
+            all_cameras = [c for c in all_cameras if not (c.get("name", "").lower() == name.lower() and c.get("user_id") == user_id)]
+        else:
+            all_cameras = [c for c in all_cameras if c.get("name", "").lower() != name.lower()]
+        if len(all_cameras) != initial_len:
+            save_json(CAMERAS_FILE, all_cameras)
             return True
         return False
 
     # Rules operations
-    def get_rules(self) -> List[Dict[str, Any]]:
-        return load_json(RULES_FILE, [])
+    def get_rules(self, user_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        all_rules = load_json(RULES_FILE, [])
+        if user_id:
+            return [r for r in all_rules if r.get("user_id") == user_id]
+        return all_rules
 
-    def save_rule(self, rule_data: Dict[str, Any]) -> Dict[str, Any]:
-        rules = self.get_rules()
+    def save_rule(self, rule_data: Dict[str, Any], user_id: Optional[str] = None) -> Dict[str, Any]:
+        all_rules = load_json(RULES_FILE, [])
         if not rule_data.get("id"):
             rule_data["id"] = f"rule-{uuid.uuid4().hex[:8]}"
+        if user_id and not rule_data.get("user_id"):
+            rule_data["user_id"] = user_id
         updated = False
-        for i, r in enumerate(rules):
+        for i, r in enumerate(all_rules):
             if r.get("id") == rule_data["id"]:
-                rules[i] = rule_data
+                all_rules[i] = rule_data
                 updated = True
                 break
         if not updated:
-            rules.append(rule_data)
-        save_json(RULES_FILE, rules)
+            all_rules.append(rule_data)
+        save_json(RULES_FILE, all_rules)
         return rule_data
 
-    def delete_rule(self, rule_id: str) -> bool:
-        rules = self.get_rules()
-        initial_len = len(rules)
-        rules = [r for r in rules if r.get("id") != rule_id]
-        if len(rules) != initial_len:
-            save_json(RULES_FILE, rules)
+    def delete_rule(self, rule_id: str, user_id: Optional[str] = None) -> bool:
+        all_rules = load_json(RULES_FILE, [])
+        initial_len = len(all_rules)
+        if user_id:
+            all_rules = [r for r in all_rules if not (r.get("id") == rule_id and r.get("user_id") == user_id)]
+        else:
+            all_rules = [r for r in all_rules if r.get("id") != rule_id]
+        if len(all_rules) != initial_len:
+            save_json(RULES_FILE, all_rules)
             return True
         return False
 
@@ -294,11 +313,14 @@ class StorageManager:
         return False
 
     # Notifications operations
-    def get_notifications(self) -> List[Dict[str, Any]]:
-        return load_json(NOTIFICATIONS_FILE, [])
+    def get_notifications(self, user_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        all_notifs = load_json(NOTIFICATIONS_FILE, [])
+        if user_id:
+            return [n for n in all_notifs if n.get("user_id") == user_id]
+        return all_notifs
 
-    def save_notification(self, notif_data: Dict[str, Any]) -> Dict[str, Any]:
-        notifications = self.get_notifications()
+    def save_notification(self, notif_data: Dict[str, Any], user_id: Optional[str] = None) -> Dict[str, Any]:
+        notifications = load_json(NOTIFICATIONS_FILE, [])
         if not notif_data.get("id"):
             notif_data["id"] = f"notif-{uuid.uuid4().hex[:8]}"
         if "read" not in notif_data:
@@ -306,6 +328,8 @@ class StorageManager:
         if "timestamp" not in notif_data:
             import datetime
             notif_data["timestamp"] = datetime.datetime.utcnow().isoformat() + "Z"
+        if user_id and not notif_data.get("user_id"):
+            notif_data["user_id"] = user_id
             
         updated = False
         for i, n in enumerate(notifications):
@@ -318,11 +342,13 @@ class StorageManager:
         save_json(NOTIFICATIONS_FILE, notifications)
         return notif_data
 
-    def mark_notification_read(self, notif_id: str) -> Optional[Dict[str, Any]]:
-        notifications = self.get_notifications()
+    def mark_notification_read(self, notif_id: str, user_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        notifications = load_json(NOTIFICATIONS_FILE, [])
         target = None
         for n in notifications:
             if n.get("id") == notif_id:
+                if user_id and n.get("user_id") and n.get("user_id") != user_id:
+                    continue
                 n["read"] = True
                 target = n
                 break
@@ -330,27 +356,37 @@ class StorageManager:
             save_json(NOTIFICATIONS_FILE, notifications)
         return target
 
-    def mark_all_notifications_read(self) -> int:
-        notifications = self.get_notifications()
+    def mark_all_notifications_read(self, user_id: Optional[str] = None) -> int:
+        notifications = load_json(NOTIFICATIONS_FILE, [])
         count = 0
         for n in notifications:
+            if user_id and n.get("user_id") and n.get("user_id") != user_id:
+                continue
             if not n.get("read", False):
                 n["read"] = True
                 count += 1
         save_json(NOTIFICATIONS_FILE, notifications)
         return count
 
-    def delete_notification(self, notif_id: str) -> bool:
-        notifications = self.get_notifications()
+    def delete_notification(self, notif_id: str, user_id: Optional[str] = None) -> bool:
+        notifications = load_json(NOTIFICATIONS_FILE, [])
         initial_len = len(notifications)
-        notifications = [n for n in notifications if n.get("id") != notif_id]
+        if user_id:
+            notifications = [n for n in notifications if not (n.get("id") == notif_id and n.get("user_id") == user_id)]
+        else:
+            notifications = [n for n in notifications if n.get("id") != notif_id]
         if len(notifications) != initial_len:
             save_json(NOTIFICATIONS_FILE, notifications)
             return True
         return False
 
-    def clear_all_notifications(self) -> bool:
-        save_json(NOTIFICATIONS_FILE, [])
+    def clear_all_notifications(self, user_id: Optional[str] = None) -> bool:
+        if user_id:
+            notifications = load_json(NOTIFICATIONS_FILE, [])
+            notifications = [n for n in notifications if n.get("user_id") != user_id]
+            save_json(NOTIFICATIONS_FILE, notifications)
+        else:
+            save_json(NOTIFICATIONS_FILE, [])
         return True
 
 storage = StorageManager()

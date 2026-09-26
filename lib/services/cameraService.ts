@@ -1,6 +1,9 @@
 /**
  * Camera Service - Handles API calls related to camera management
+ * Scoped to authenticated user ID for complete privacy isolation.
  */
+
+import { getAuthHeaders, getStoredUserId } from '@/lib/auth-utils';
 
 // Type definitions for camera data
 export type CameraFilter = {
@@ -11,12 +14,15 @@ export type CameraFilter = {
 
 export type Camera = {
   id?: string;
+  user_id?: string;
   name: string;
   rtsp_url: string;
   status?: 'online' | 'offline';
   stream_url?: string;
+  hls_url?: string;
   webrtc_url?: string;
   filters?: CameraFilter[];
+  location?: string;
 };
 
 export type StreamInfo = {
@@ -39,12 +45,17 @@ export const AVAILABLE_FILTERS = [
 ];
 
 /**
- * Fetches all cameras from the backend API
+ * Fetches all cameras for the current user from backend
  * GET /api/v1/contextual/cameras
  */
 export const fetchCameras = async (): Promise<Camera[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/contextual/cameras`);
+    const userId = getStoredUserId();
+    const query = userId ? `?user_id=${encodeURIComponent(userId)}` : '';
+    const response = await fetch(`${API_BASE_URL}/contextual/cameras${query}`, {
+      headers: getAuthHeaders(),
+      cache: 'no-store'
+    });
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`);
     }
@@ -61,7 +72,12 @@ export const fetchCameras = async (): Promise<Camera[]> => {
  */
 export const fetchCameraById = async (cameraId: string): Promise<Camera> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/cameras/${cameraId}`);
+    const userId = getStoredUserId();
+    const query = userId ? `?user_id=${encodeURIComponent(userId)}` : '';
+    const response = await fetch(`${API_BASE_URL}/cameras/${cameraId}${query}`, {
+      headers: getAuthHeaders(),
+      cache: 'no-store'
+    });
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`);
     }
@@ -78,7 +94,12 @@ export const fetchCameraById = async (cameraId: string): Promise<Camera> => {
  */
 export const fetchCameraByName = async (name: string): Promise<Camera> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/cameras/by-name/${encodeURIComponent(name)}`);
+    const userId = getStoredUserId();
+    const query = userId ? `?user_id=${encodeURIComponent(userId)}` : '';
+    const response = await fetch(`${API_BASE_URL}/cameras/by-name/${encodeURIComponent(name)}${query}`, {
+      headers: getAuthHeaders(),
+      cache: 'no-store'
+    });
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`);
     }
@@ -90,21 +111,22 @@ export const fetchCameraByName = async (name: string): Promise<Camera> => {
 };
 
 /**
- * Adds a new camera
+ * Adds a new camera scoped to current user
  * POST /api/v1/cameras/
  */
-export const addCamera = async (cameraData: { name: string; rtsp_url: string }): Promise<Camera> => {
+export const addCamera = async (cameraData: { name: string; rtsp_url: string; user_id?: string }): Promise<Camera> => {
   try {
-    // Create a FormData object
+    const userId = cameraData.user_id || getStoredUserId();
     const formData = new FormData();
-    
-    // Append camera data according to API requirements
     formData.append('name', cameraData.name);
     formData.append('rtsp_url', cameraData.rtsp_url);
+    if (userId) {
+      formData.append('user_id', userId);
+    }
 
-    // Send the request
     const response = await fetch(`${API_BASE_URL}/cameras/`, {
       method: 'POST',
+      headers: getAuthHeaders(),
       body: formData,
     });
 
@@ -120,7 +142,7 @@ export const addCamera = async (cameraData: { name: string; rtsp_url: string }):
 };
 
 /**
- * Adds a new camera with filters
+ * Adds a new camera with filters scoped to current user
  * POST /api/v1/cameras/with-filters
  */
 export const addCameraWithFilters = async (
@@ -129,29 +151,29 @@ export const addCameraWithFilters = async (
     rtsp_url: string; 
     filters?: CameraFilter[];
     validate?: boolean;
+    user_id?: string;
   }
 ): Promise<Camera> => {
   try {
-    // Create a FormData object for multipart form submission
+    const userId = cameraData.user_id || getStoredUserId();
     const formData = new FormData();
-    
-    // Append camera data according to API requirements
     formData.append('name', cameraData.name);
     formData.append('rtsp_url', cameraData.rtsp_url);
+    if (userId) {
+      formData.append('user_id', userId);
+    }
     
-    // Add filters if provided
     if (cameraData.filters && cameraData.filters.length > 0) {
       formData.append('filters', JSON.stringify(cameraData.filters));
     }
     
-    // Add validate flag if provided
     if (cameraData.validate !== undefined) {
       formData.append('validate', String(cameraData.validate));
     }
 
-    // Send the request
     const response = await fetch(`${API_BASE_URL}/cameras/with-filters`, {
       method: 'POST',
+      headers: getAuthHeaders(),
       body: formData,
     });
 
@@ -172,8 +194,11 @@ export const addCameraWithFilters = async (
  */
 export const deleteCameraById = async (cameraId: string): Promise<void> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/cameras/${cameraId}`, {
+    const userId = getStoredUserId();
+    const query = userId ? `?user_id=${encodeURIComponent(userId)}` : '';
+    const response = await fetch(`${API_BASE_URL}/cameras/${cameraId}${query}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -191,8 +216,11 @@ export const deleteCameraById = async (cameraId: string): Promise<void> => {
  */
 export const deleteCameraByName = async (name: string): Promise<void> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/cameras/by-name/${encodeURIComponent(name)}`, {
+    const userId = getStoredUserId();
+    const query = userId ? `?user_id=${encodeURIComponent(userId)}` : '';
+    const response = await fetch(`${API_BASE_URL}/cameras/by-name/${encodeURIComponent(name)}${query}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -212,9 +240,9 @@ export const startCameraStream = async (cameraId: string): Promise<{ webrtc_url:
   try {
     const response = await fetch(`${API_BASE_URL}/streaming/start`, {
       method: 'POST',
-      headers: {
+      headers: getAuthHeaders({
         'Content-Type': 'application/json'
-      },
+      }),
       body: JSON.stringify({ camera_id: cameraId }),
     });
     
@@ -223,8 +251,6 @@ export const startCameraStream = async (cameraId: string): Promise<{ webrtc_url:
     }
     
     const data = await response.json();
-    
-    // The API might return different structure, this handles common formats
     if (data.webrtc_url) {
       return { webrtc_url: data.webrtc_url };
     } else if (data.url) {
@@ -232,7 +258,6 @@ export const startCameraStream = async (cameraId: string): Promise<{ webrtc_url:
     } else if (data.result && data.result.webrtc_url) {
       return { webrtc_url: data.result.webrtc_url };
     } else {
-      // Construct WebRTC URL from API base
       return { 
         webrtc_url: `ws://${window.location.hostname}:8000/api/v1/streaming/${cameraId}/webrtc`
       };
@@ -249,12 +274,15 @@ export const startCameraStream = async (cameraId: string): Promise<{ webrtc_url:
  */
 export const fetchCameraFilters = async (cameraId: string): Promise<CameraFilter[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/cameras/${cameraId}/filters`);
-    
+    const userId = getStoredUserId();
+    const query = userId ? `?user_id=${encodeURIComponent(userId)}` : '';
+    const response = await fetch(`${API_BASE_URL}/cameras/${cameraId}/filters${query}`, {
+      headers: getAuthHeaders(),
+      cache: 'no-store'
+    });
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`);
     }
-    
     return await response.json();
   } catch (error) {
     console.error(`Failed to fetch filters for camera ${cameraId}:`, error);
@@ -273,9 +301,9 @@ export const updateCameraFilters = async (
   try {
     const response = await fetch(`${API_BASE_URL}/cameras/${cameraId}/filters`, {
       method: 'PUT',
-      headers: {
+      headers: getAuthHeaders({
         'Content-Type': 'application/json',
-      },
+      }),
       body: JSON.stringify(filters),
     });
     
@@ -291,12 +319,17 @@ export const updateCameraFilters = async (
 };
 
 /**
- * Gets status of all camera streams
+ * Gets status of all camera streams for user
  * GET /api/v1/streaming/
  */
 export const getStreamStatus = async (): Promise<{ active_streams: StreamInfo[] }> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/streaming/`);
+    const userId = getStoredUserId();
+    const query = userId ? `?user_id=${encodeURIComponent(userId)}` : '';
+    const response = await fetch(`${API_BASE_URL}/streaming/${query}`, {
+      headers: getAuthHeaders(),
+      cache: 'no-store'
+    });
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`);
     }
@@ -316,6 +349,7 @@ export const startStream = async (cameraId: string, withDetection: boolean = fal
     const url = `${API_BASE_URL}/streaming/start/${cameraId}${withDetection ? '?with_detection=true' : ''}`;
     const response = await fetch(url, {
       method: 'POST',
+      headers: getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -337,6 +371,7 @@ export const stopStream = async (cameraId: string): Promise<void> => {
   try {
     const response = await fetch(`${API_BASE_URL}/streaming/stop/${cameraId}`, {
       method: 'POST',
+      headers: getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -349,12 +384,17 @@ export const stopStream = async (cameraId: string): Promise<void> => {
 };
 
 /**
- * Gets HLS URLs for all active cameras
+ * Gets HLS URLs for active cameras of the user
  * GET /api/v1/streaming/stream-urls
  */
 export const getStreamUrls = async (): Promise<StreamInfo[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/streaming/stream-urls`);
+    const userId = getStoredUserId();
+    const query = userId ? `?user_id=${encodeURIComponent(userId)}` : '';
+    const response = await fetch(`${API_BASE_URL}/streaming/stream-urls${query}`, {
+      headers: getAuthHeaders(),
+      cache: 'no-store'
+    });
     
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`);

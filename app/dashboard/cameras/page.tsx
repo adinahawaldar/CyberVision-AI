@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getCameras } from '@/lib/data/cameras';
@@ -12,7 +13,9 @@ import {
   Filter, 
   Grid2X2, 
   Columns, 
-  Loader2
+  Loader2,
+  PlusCircle,
+  Camera as CameraIcon
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -158,6 +161,30 @@ export default function CamerasPage() {
         <div className="flex items-center justify-center p-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
+      ) : filteredCameras.length === 0 ? (
+        <Card className="p-12 text-center border-dashed">
+          <div className="flex flex-col items-center justify-center space-y-4 max-w-md mx-auto">
+            <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center text-primary">
+              <CameraIcon className="w-6 h-6 text-[#ff3538]" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-lg font-semibold">No Cameras Found</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                {cameras.length === 0
+                  ? "You have not added any cameras yet. Connect a camera feed to start monitoring."
+                  : "No cameras match your current search and filter settings."}
+              </p>
+            </div>
+            {cameras.length === 0 && (
+              <Button asChild className="rounded-full bg-[#ff3538] hover:bg-[#e62e31] text-white">
+                <Link href="/dashboard/settings?tab=cameras">
+                  <PlusCircle className="w-4 h-4 mr-1.5" />
+                  Add New Camera
+                </Link>
+              </Button>
+            )}
+          </div>
+        </Card>
       ) : (
         <>
           {view === 'grid' && (

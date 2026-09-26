@@ -11,9 +11,9 @@
   },
   {
     "id": "user-worker-2",
-    "full_name": "Adina Hawaldar",
-    "username": "adina",
-    "age": 22,
+    "full_name": "Security Officer",
+    "username": "operator",
+    "age": 28,
     "role": "worker",
     "photo_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces",
     "lastDetection": "10 minutes ago",

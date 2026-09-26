@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,8 @@ import {
   EyeOff, 
   Sparkles,
   RefreshCw,
-  Camera as CameraIcon
+  Camera as CameraIcon,
+  PlusCircle
 } from "lucide-react";
 import { getCamerasClient } from "@/lib/data/cameras";
 import { Camera } from "@/lib/types";
@@ -190,14 +192,10 @@ export default function LiveViewPage() {
     setIsLoading(true);
     try {
       const data = await getCamerasClient();
-      if (data && data.length > 0) {
-        setCameras(data);
-      } else {
-        setCameras(DEFAULT_CAMERAS);
-      }
+      setCameras(data || []);
     } catch (e) {
-      console.error("Failed to load cameras, using default fallback:", e);
-      setCameras(DEFAULT_CAMERAS);
+      console.error("Failed to load cameras:", e);
+      setCameras([]);
     } finally {
       setIsLoading(false);
     }
@@ -293,6 +291,26 @@ export default function LiveViewPage() {
           <div className="flex flex-col items-center gap-3">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
             <p className="text-sm font-mono text-muted-foreground">Initializing camera video pipeline...</p>
+          </div>
+        </div>
+      ) : cameras.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-dashed border-border/60 bg-zinc-950/40 min-h-[380px] space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center text-primary shadow-inner">
+            <CameraIcon className="w-7 h-7 text-[#ff3538]" />
+          </div>
+          <div className="space-y-1.5 max-w-md">
+            <h3 className="text-lg font-bold tracking-tight">No Cameras Connected Yet</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Your account has no CCTV feeds configured. Add your first RTSP stream or USB webcam to begin monitoring.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 pt-2">
+            <Button asChild className="rounded-full bg-[#ff3538] hover:bg-[#e62e31] text-white">
+              <Link href="/dashboard/settings?tab=cameras">
+                <PlusCircle className="w-4 h-4 mr-1.5" />
+                Add Camera Feed
+              </Link>
+            </Button>
           </div>
         </div>
       ) : (

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Play } from "lucide-react";
 import { motion } from "framer-motion";
@@ -16,7 +17,7 @@ export default function Hero() {
     if (isAuthenticated) {
       router.push("/dashboard");
     } else {
-      router.push("/login");
+      router.push("/sign-in");
     }
   };
 
@@ -148,11 +149,13 @@ export default function Hero() {
         >
           {/* VIEW PLATFORM BUTTON */}
           <Button
-            onClick={handleViewPlatform}
+            asChild
             className="w-full sm:w-auto h-10 sm:h-11 px-6 rounded-full bg-white hover:bg-slate-100 text-black font-semibold text-xs sm:text-sm transition-all shadow-sm hover:shadow flex items-center justify-center space-x-2 cursor-pointer group"
           >
-            <span>Get Started</span>
-            <ArrowRight className="w-3.5 h-3.5 text-black group-hover:translate-x-0.5 transition-transform" />
+            <Link href="/sign-in">
+              <span>Get Started</span>
+              <ArrowRight className="w-3.5 h-3.5 text-black group-hover:translate-x-0.5 transition-transform" />
+            </Link>
           </Button>
 
           {/* SEE HOW IT WORKS BUTTON */}

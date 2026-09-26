@@ -1,11 +1,16 @@
-// Camera data fetching for client-side
 import { Camera } from '@/lib/types';
 import { getStreamUrls, getStreamStatus } from '@/lib/services/cameraService';
+import { getAuthHeaders, getStoredUserId } from '@/lib/auth-utils';
 
 // For client-side usage - fetch from API
 export const getCamerasClient = async (): Promise<Camera[]> => {
   try {
-    const response = await fetch('http://localhost:8000/api/v1/cameras');
+    const userId = getStoredUserId();
+    const query = userId ? `?user_id=${encodeURIComponent(userId)}` : '';
+    const response = await fetch(`http://localhost:8000/api/v1/cameras${query}`, {
+      headers: getAuthHeaders(),
+      cache: 'no-store'
+    });
     if (!response.ok) {
       throw new Error(`Error fetching cameras: ${response.status}`);
     }

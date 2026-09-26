@@ -37,9 +37,19 @@ export default function Header() {
   const unreadCount = notifications.filter(n => !n.read).length;
   const { systemName } = useGeneralSettings();
 
-  const handleLogout = () => {
-    logout();
-    router.push('/');
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await logout();
+    } catch (e) {
+      console.error("Logout failed:", e);
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
+    }
   };
 
   const getInitials = (name: string) => {

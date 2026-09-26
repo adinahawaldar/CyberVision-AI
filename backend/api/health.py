@@ -1,23 +1,34 @@
 import psutil
 import time
 from datetime import datetime
-from fastapi import APIRouter
+from typing import Optional
+from fastapi import APIRouter, Request
 from backend.services.storage import storage
 from backend.services.camera_manager import camera_manager
 
 router = APIRouter(tags=["health"])
 
+def get_user_id_from_request(request: Request) -> Optional[str]:
+    user_id = request.headers.get("X-User-Id") or request.query_params.get("user_id")
+    if user_id and user_id.strip():
+        return user_id.strip()
+    cookie_user_id = request.cookies.get("cv_user_id")
+    if cookie_user_id and cookie_user_id.strip():
+        return cookie_user_id.strip()
+    return None
+
 @router.get("/health")
-async def get_system_health():
-    """Returns real-time node metrics: CPU, RAM, disk, and camera uptime."""
+async def get_system_health(request: Request):
+    """Returns real-time node metrics: CPU, RAM, disk, and user-scoped camera uptime."""
+    user_id = get_user_id_from_request(request)
     cpu_percent = psutil.cpu_percent(interval=0.1)
     mem = psutil.virtual_memory()
     disk = psutil.disk_usage('/')
     
-    cameras = storage.get_cameras()
+    cameras = storage.get_cameras(user_id=user_id)
     total_cameras = len(cameras)
-    active_streams = camera_manager.get_active_streams()
-    online_cameras = len(active_streams)
+    active_stream_ids = {s["camera_id"] for s in camera_manager.get_active_streams()}
+    online_cameras = sum(1 for c in cameras if c.get("id") in active_stream_ids)
     offline_cameras = max(0, total_cameras - online_cameras)
     online_pct = int((online_cameras / total_cameras * 100)) if total_cameras > 0 else 100
 

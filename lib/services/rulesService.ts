@@ -1,8 +1,10 @@
 /**
  * Rules Service - Handles API calls related to automation rules management
+ * Scoped to authenticated user ID for multi-tenant isolation.
  */
 
 import { Camera } from './cameraService';
+import { getAuthHeaders, getStoredUserId, getUserStorageKey } from '@/lib/auth-utils';
 
 // Type definitions for rule data
 export type RuleAction = 'notify' | 'record' | 'trigger_alarm' | 'custom';
@@ -36,6 +38,7 @@ export type RuleCondition =
 // Rule definition
 export interface Rule {
   id: string;
+  user_id?: string;
   name: string;
   cameraId?: string; // Optional, if null applies to all cameras
   cameraName?: string; // For display purposes
@@ -51,20 +54,26 @@ export interface Rule {
 const API_BASE_URL = 'http://localhost:8000/api/v1';
 
 /**
- * Fetches all rules from the backend API
+ * Fetches all rules from the backend API for current user
  */
 export const fetchRules = async (): Promise<Rule[]> => {
+  const userId = getStoredUserId();
+  const rulesKey = getUserStorageKey('rules');
   try {
-    const response = await fetch(`${API_BASE_URL}/rules/`);
+    const query = userId ? `?user_id=${encodeURIComponent(userId)}` : '';
+    const response = await fetch(`${API_BASE_URL}/rules/${query}`, {
+      headers: getAuthHeaders(),
+      cache: 'no-store'
+    });
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`);
     }
     return await response.json();
   } catch (error) {
     console.error('Failed to fetch rules:', error);
-    // For demo purposes, return from localStorage if available
+    // User-scoped fallback
     if (typeof window !== 'undefined') {
-      const savedRules = localStorage.getItem('rules');
+      const savedRules = localStorage.getItem(rulesKey);
       if (savedRules) {
         try {
           return JSON.parse(savedRules);
@@ -81,31 +90,38 @@ export const fetchRules = async (): Promise<Rule[]> => {
  * Fetches rules for a specific camera
  */
 export const fetchRulesByCameraId = async (cameraId: string): Promise<Rule[]> => {
+  const userId = getStoredUserId();
   try {
-    const response = await fetch(`${API_BASE_URL}/cameras/${cameraId}/rules`);
+    const query = userId ? `?user_id=${encodeURIComponent(userId)}` : '';
+    const response = await fetch(`${API_BASE_URL}/cameras/${cameraId}/rules${query}`, {
+      headers: getAuthHeaders(),
+      cache: 'no-store'
+    });
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`);
     }
     return await response.json();
   } catch (error) {
     console.error(`Failed to fetch rules for camera ${cameraId}:`, error);
-    // For demo purposes, filter from localStorage
     const allRules = await fetchRules();
     return allRules.filter(rule => rule.cameraId === cameraId);
   }
 };
 
 /**
- * Adds a new rule
+ * Adds a new rule scoped to the user
  */
 export const addRule = async (rule: Omit<Rule, 'id'>): Promise<Rule> => {
+  const userId = getStoredUserId();
+  const rulesKey = getUserStorageKey('rules');
+  const payload = { ...rule, user_id: userId || undefined };
   try {
     const response = await fetch(`${API_BASE_URL}/rules/`, {
       method: 'POST',
-      headers: {
+      headers: getAuthHeaders({
         'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(rule),
+      }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -116,14 +132,14 @@ export const addRule = async (rule: Omit<Rule, 'id'>): Promise<Rule> => {
   } catch (error) {
     console.error('Failed to add rule:', error);
     
-    // For demo purposes, generate ID and save to localStorage
+    // User-scoped fallback
     const newRule = {
-      ...rule,
+      ...payload,
       id: `rule-${Date.now().toString(36)}`
-    };
+    } as Rule;
     
     if (typeof window !== 'undefined') {
-      const savedRules = localStorage.getItem('rules');
+      const savedRules = localStorage.getItem(rulesKey);
       let rules: Rule[] = [];
       
       if (savedRules) {
@@ -135,7 +151,7 @@ export const addRule = async (rule: Omit<Rule, 'id'>): Promise<Rule> => {
       }
       
       rules.push(newRule);
-      localStorage.setItem('rules', JSON.stringify(rules));
+      localStorage.setItem(rulesKey, JSON.stringify(rules));
     }
     
     return newRule;
@@ -146,12 +162,13 @@ export const addRule = async (rule: Omit<Rule, 'id'>): Promise<Rule> => {
  * Updates an existing rule
  */
 export const updateRule = async (ruleId: string, rule: Partial<Rule>): Promise<Rule> => {
+  const rulesKey = getUserStorageKey('rules');
   try {
     const response = await fetch(`${API_BASE_URL}/rules/${ruleId}`, {
       method: 'PATCH',
-      headers: {
+      headers: getAuthHeaders({
         'Content-Type': 'application/json',
-      },
+      }),
       body: JSON.stringify(rule),
     });
 
@@ -163,14 +180,13 @@ export const updateRule = async (ruleId: string, rule: Partial<Rule>): Promise<R
   } catch (error) {
     console.error(`Failed to update rule ${ruleId}:`, error);
     
-    // For demo purposes, update in localStorage
     if (typeof window !== 'undefined') {
-      const savedRules = localStorage.getItem('rules');
+      const savedRules = localStorage.getItem(rulesKey);
       if (savedRules) {
         try {
           let rules: Rule[] = JSON.parse(savedRules);
           rules = rules.map(r => r.id === ruleId ? { ...r, ...rule } : r);
-          localStorage.setItem('rules', JSON.stringify(rules));
+          localStorage.setItem(rulesKey, JSON.stringify(rules));
           return rules.find(r => r.id === ruleId) as Rule;
         } catch (e) {
           console.error('Error updating local rules:', e);
@@ -186,9 +202,11 @@ export const updateRule = async (ruleId: string, rule: Partial<Rule>): Promise<R
  * Deletes a rule
  */
 export const deleteRule = async (ruleId: string): Promise<void> => {
+  const rulesKey = getUserStorageKey('rules');
   try {
     const response = await fetch(`${API_BASE_URL}/rules/${ruleId}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -197,14 +215,13 @@ export const deleteRule = async (ruleId: string): Promise<void> => {
   } catch (error) {
     console.error(`Failed to delete rule ${ruleId}:`, error);
     
-    // For demo purposes, delete from localStorage
     if (typeof window !== 'undefined') {
-      const savedRules = localStorage.getItem('rules');
+      const savedRules = localStorage.getItem(rulesKey);
       if (savedRules) {
         try {
           let rules: Rule[] = JSON.parse(savedRules);
           rules = rules.filter(r => r.id !== ruleId);
-          localStorage.setItem('rules', JSON.stringify(rules));
+          localStorage.setItem(rulesKey, JSON.stringify(rules));
         } catch (e) {
           console.error('Error deleting local rule:', e);
         }
@@ -231,12 +248,13 @@ export const getEventOptions = (): { value: RuleEvent; label: string }[] => {
  * Toggle rule enabled status
  */
 export const toggleRuleStatus = async (ruleId: string, enabled: boolean): Promise<Rule> => {
+  const rulesKey = getUserStorageKey('rules');
   try {
     const response = await fetch(`${API_BASE_URL}/rules/${ruleId}`, {
       method: 'PATCH',
-      headers: {
+      headers: getAuthHeaders({
         'Content-Type': 'application/json',
-      },
+      }),
       body: JSON.stringify({ enabled }),
     });
 
@@ -248,14 +266,13 @@ export const toggleRuleStatus = async (ruleId: string, enabled: boolean): Promis
   } catch (error) {
     console.error(`Failed to update rule status ${ruleId}:`, error);
     
-    // For demo purposes, update in localStorage
     if (typeof window !== 'undefined') {
-      const savedRules = localStorage.getItem('rules');
+      const savedRules = localStorage.getItem(rulesKey);
       if (savedRules) {
         try {
           let rules: Rule[] = JSON.parse(savedRules);
           rules = rules.map(r => r.id === ruleId ? { ...r, enabled } : r);
-          localStorage.setItem('rules', JSON.stringify(rules));
+          localStorage.setItem(rulesKey, JSON.stringify(rules));
           return rules.find(r => r.id === ruleId) as Rule;
         } catch (e) {
           console.error('Error updating local rules:', e);

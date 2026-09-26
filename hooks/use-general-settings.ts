@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getUserStorageKey } from '@/lib/auth-utils';
 
 interface GeneralSettings {
   systemName: string;
@@ -8,7 +9,7 @@ interface GeneralSettings {
 }
 
 const defaultSettings: GeneralSettings = {
-  systemName: 'SecureView AI',
+  systemName: 'CyberVision AI',
   timezone: 'UTC-5',
   dateFormat: 'MM/DD/YYYY',
   timeFormat: '12h',
@@ -21,7 +22,8 @@ export function useGeneralSettings() {
     // Only run on client-side
     if (typeof window !== 'undefined') {
       try {
-        const savedSettings = localStorage.getItem('generalSettings');
+        const key = getUserStorageKey('generalSettings');
+        const savedSettings = localStorage.getItem(key);
         if (savedSettings) {
           setSettings(JSON.parse(savedSettings));
         }

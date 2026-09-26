@@ -1,6 +1,7 @@
 [
   {
     "id": "cam-webcam-0",
+    "user_id": "demo",
     "name": "Camera 01 - Main Entrance (Webcam)",
     "rtsp_url": "0",
     "location": "Main Entrance",
@@ -35,6 +36,7 @@
   },
   {
     "id": "cam-synthetic-2",
+    "user_id": "demo",
     "name": "Camera 02 - Perimeter Patrol",
     "rtsp_url": "synth:perimeter",
     "location": "Perimeter North",
@@ -59,6 +61,7 @@
   },
   {
     "id": "cam-synthetic-3",
+    "user_id": "demo",
     "name": "Camera 03 - Server Vault",
     "rtsp_url": "synth:vault",
     "location": "Secure Server Room",

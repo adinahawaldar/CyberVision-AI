@@ -17,7 +17,7 @@ export default function Navbar() {
     if (isAuthenticated) {
       router.push("/dashboard");
     } else {
-      router.push("/login");
+      router.push("/sign-in");
     }
   };
 
@@ -48,12 +48,12 @@ export default function Navbar() {
 
         {/* RIGHT: WHITE ROUNDED PILL DASHBOARD CTA BUTTON */}
         <div className="hidden md:flex items-center shrink-0">
-          <button
-            onClick={handleDashboardClick}
+          <Link
+            href={isAuthenticated ? "/dashboard" : "/sign-in"}
             className="h-10 px-6 rounded-full bg-white hover:bg-slate-100 text-black font-semibold text-xs sm:text-sm transition-all shadow-sm flex items-center justify-center cursor-pointer"
           >
             Dashboard
-          </button>
+          </Link>
         </div>
 
         {/* MOBILE MENU TOGGLE BUTTON */}
@@ -95,15 +95,13 @@ export default function Navbar() {
           </nav>
 
           <div className="pt-2">
-            <button
-              onClick={(e) => {
-                setMobileMenuOpen(false);
-                handleDashboardClick(e);
-              }}
-              className="w-full rounded-full bg-white hover:bg-slate-100 text-black font-semibold text-sm py-2.5 shadow-md border-0 transition-colors"
+            <Link
+              href={isAuthenticated ? "/dashboard" : "/sign-in"}
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full rounded-full bg-white hover:bg-slate-100 text-black font-semibold text-sm py-2.5 shadow-md border-0 transition-colors flex items-center justify-center cursor-pointer"
             >
               Dashboard
-            </button>
+            </Link>
           </div>
         </div>
       )}

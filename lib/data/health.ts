@@ -1,14 +1,17 @@
-// Live & fallback data for health status
 import { HealthStatus } from '@/lib/types';
+import { getAuthHeaders, getStoredUserId } from '@/lib/auth-utils';
 
 const API_BASE_URL = 'http://localhost:8000/api/v1';
 
 // Function to fetch live health status from FastAPI backend with fallback
 export const getHealthStatus = async (): Promise<HealthStatus> => {
   try {
+    const userId = getStoredUserId();
+    const query = userId ? `?user_id=${encodeURIComponent(userId)}` : '';
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 2000);
-    const response = await fetch(`${API_BASE_URL}/health`, {
+    const response = await fetch(`${API_BASE_URL}/health${query}`, {
+      headers: getAuthHeaders(),
       signal: controller.signal,
       cache: 'no-store'
     });

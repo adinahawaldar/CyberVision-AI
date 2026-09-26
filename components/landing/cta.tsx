@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
@@ -15,7 +16,7 @@ export default function CTA() {
     if (isAuthenticated) {
       router.push("/dashboard");
     } else {
-      router.push("/login");
+      router.push("/sign-in");
     }
   };
 
@@ -74,11 +75,13 @@ export default function CTA() {
             className="pt-1 flex justify-center"
           >
             <Button
-              onClick={handleDashboardClick}
+              asChild
               className="h-10 sm:h-11 px-6 sm:px-8 rounded-full bg-white hover:bg-slate-100 text-black font-extrabold text-xs uppercase tracking-wider transition-all hover:scale-105 shadow-lg flex items-center space-x-2 cursor-pointer border-0 group"
             >
-              <span>GET STARTED NOW</span>
-              <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform" />
+              <Link href="/sign-in">
+                <span>GET STARTED NOW</span>
+                <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform" />
+              </Link>
             </Button>
           </motion.div>
 
