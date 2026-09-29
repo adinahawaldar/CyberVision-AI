@@ -46,9 +46,10 @@ export type AddCameraFormValues = z.infer<typeof addCameraSchema>;
 
 interface AddCameraDialogProps {
   onCameraAdded: (camera: Camera) => void;
+  trigger?: React.ReactNode;
 }
 
-export default function AddCameraDialog({ onCameraAdded }: AddCameraDialogProps) {
+export default function AddCameraDialog({ onCameraAdded, trigger }: AddCameraDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -128,10 +129,12 @@ export default function AddCameraDialog({ onCameraAdded }: AddCameraDialogProps)
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button className="ml-auto">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Camera
-        </Button>
+        {trigger || (
+          <Button className="ml-auto">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Camera
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>

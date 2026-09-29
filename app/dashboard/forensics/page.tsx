@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FolderOpen,
@@ -142,11 +143,19 @@ const mitreTactics = [
 ];
 
 export default function ForensicsDashboardPage() {
+  const searchParams = useSearchParams();
   const [selectedTab, setSelectedTab] = useState("overview");
   const [searchQuery, setSearchQuery] = useState("");
   const [cases, setCases] = useState(initialCases);
   const [isVerifying, setIsVerifying] = useState<string | null>(null);
   const [verifiedHash, setVerifiedHash] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && ["overview", "cases", "evidence", "timeline", "threats", "reports"].includes(tab)) {
+      setSelectedTab(tab);
+    }
+  }, [searchParams]);
 
   const handleVerifyHash = (caseId: string) => {
     setIsVerifying(caseId);
@@ -185,16 +194,10 @@ export default function ForensicsDashboardPage() {
 
         <div className="flex flex-wrap items-center gap-3">
           <Button
-            variant="outline"
-            className="border-white/10 bg-[#161a22] hover:bg-white/10 text-slate-200"
-            onClick={() => window.open("http://localhost:5173", "_blank")}
+            onClick={() => setSelectedTab("cases")}
+            className="bg-red-600 hover:bg-red-700 text-white shadow-md text-xs font-semibold h-9 px-4 rounded-lg"
           >
-            <ExternalLink className="w-4 h-4 mr-2 text-cyan-400" />
-            Open Standalone Studio (Port 5173)
-          </Button>
-
-          <Button className="bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-600/20">
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4 mr-1.5 stroke-[2.5]" />
             New Investigation
           </Button>
         </div>
@@ -253,6 +256,9 @@ export default function ForensicsDashboardPage() {
           </TabsTrigger>
           <TabsTrigger value="threats" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300">
             <Network className="w-4 h-4 mr-2" /> MITRE & Threat IOCs
+          </TabsTrigger>
+          <TabsTrigger value="reports" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300">
+            <FileText className="w-4 h-4 mr-2" /> Reports
           </TabsTrigger>
         </TabsList>
 
@@ -632,6 +638,56 @@ export default function ForensicsDashboardPage() {
             </Card>
 
           </div>
+        </TabsContent>
+
+        {/* TAB 6: REPORTS */}
+        <TabsContent value="reports" className="space-y-4">
+          <Card className="bg-[#12161f]/80 border-white/10">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-cyan-400" />
+                  Structured Investigation Reports
+                </CardTitle>
+                <CardDescription className="text-xs text-slate-400">
+                  Comprehensive forensic dossiers with executive summaries, SHA-256 evidence logs, and timeline analysis.
+                </CardDescription>
+              </div>
+              <Button size="sm" className="bg-cyan-600 hover:bg-cyan-500 text-white text-xs">
+                <Plus className="w-3.5 h-3.5 mr-1.5" />
+                Generate New Report
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {[
+                  { id: "REP-2026-088", title: "Comprehensive Forensics Audit - Perimeter Gate 02 Breach", caseId: "CAS-2026-004", date: "29 Sep 2026", status: "FINALIZED", pages: 12 },
+                  { id: "REP-2026-087", title: "Server Vault Unauthorized Keycard Attempt Investigation", caseId: "CAS-2026-003", date: "28 Sep 2026", status: "IN_REVIEW", pages: 8 },
+                  { id: "REP-2026-086", title: "Simulated Long-Rifle vs Umbrella Detection Discrimination Dossier", caseId: "CAS-2026-002", date: "26 Sep 2026", status: "VERIFIED", pages: 16 }
+                ].map((rep) => (
+                  <div key={rep.id} className="p-4 rounded-xl bg-[#161a22] border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-cyan-400">{rep.id}</span>
+                        <Badge variant="outline" className="text-[10px] border-white/10 text-slate-300">{rep.caseId}</Badge>
+                        <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px]">{rep.status}</Badge>
+                      </div>
+                      <h4 className="text-sm font-semibold text-white">{rep.title}</h4>
+                      <p className="text-xs text-slate-400">Generated on {rep.date} &bull; {rep.pages} pages &bull; SHA-256 sealed</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Button size="sm" variant="outline" className="border-white/10 text-xs text-slate-200 hover:bg-white/10">
+                        <Eye className="w-3.5 h-3.5 mr-1" /> View Report
+                      </Button>
+                      <Button size="sm" className="bg-white/10 hover:bg-white/20 text-white text-xs">
+                        <Download className="w-3.5 h-3.5 mr-1" /> Export PDF
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
       </Tabs>

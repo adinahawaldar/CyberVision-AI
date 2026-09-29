@@ -1,253 +1,328 @@
-"use client"
+"use client";
 
+import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
+import { buttonVariants, Button } from '@/components/ui/button';
 import {
   LayoutDashboard,
   Camera,
-  AlertTriangle,
-  Activity,
-  Settings,
-  PlayCircle,
-  ChevronDown,
-  ChevronRight,
-  Shield,
+  FolderOpen,
+  Database,
+  Clock,
+  Bot,
+  FileText,
   ShieldAlert,
-  BrainCircuit,
-  FlaskConical, // Added for Test icon
-  Bell, // Added for Notifications icon
+  Settings,
+  Plus,
+  ChevronDown,
+  UploadCloud,
+  FileCheck2,
+  FolderKanban
 } from 'lucide-react';
-import { useAuth } from '@/components/providers/auth-provider';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Collapsible,
   CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-
-interface SidebarItem {
-  title: string;
-  href: string;
-  icon: React.ReactNode;
-  submenu?: SidebarItem[];
-}
+  CollapsibleTrigger
+} from '@/components/ui/collapsible';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user } = useAuth();
+  const { toast } = useToast();
 
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    cameras: true,
-  });
+  const [isCasesOpen, setIsCasesOpen] = useState(true);
+  const [isCreateCaseOpen, setIsCreateCaseOpen] = useState(false);
+  const [caseTitle, setCaseTitle] = useState('');
+  const [casePriority, setCasePriority] = useState('HIGH');
+  const [caseLocation, setCaseLocation] = useState('Main Plaza / North Gate');
+  const [caseCamera, setCaseCamera] = useState('CAMERA 01 - Main Entrance');
 
-  const toggleGroup = (group: string) => {
-    setOpenGroups({
-      ...openGroups,
-      [group]: !openGroups[group],
+  const handleCreateCaseSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!caseTitle.trim()) return;
+
+    toast({
+      title: "Case Created Successfully",
+      description: `Case "${caseTitle}" registered with priority ${casePriority}.`,
     });
+
+    setIsCreateCaseOpen(false);
+    setCaseTitle('');
+    router.push('/dashboard/forensics?tab=cases');
   };
 
-  const sidebarItems: SidebarItem[] = [
+  const caseSubItems = [
     {
-      title: 'Dashboard',
-      href: '/dashboard',
-      icon: <LayoutDashboard className="w-5 h-5" />,
+      title: 'Case Management',
+      href: '/dashboard/forensics?tab=cases',
+      icon: <FolderKanban className="w-3.5 h-3.5" />,
     },
     {
-      title: 'Digital Forensics',
-      href: '/dashboard/forensics',
-      icon: <ShieldAlert className="w-5 h-5 text-cyan-400" />,
+      title: 'Evidence Vault',
+      href: '/dashboard/forensics?tab=evidence',
+      icon: <Database className="w-3.5 h-3.5" />,
     },
     {
-      title: 'Notifications', // New Notifications menu item
-      href: '/dashboard/notifications',
-      icon: <Bell className="w-5 h-5" />,
+      title: 'Evidence Upload',
+      href: '/dashboard/forensics?tab=evidence&action=upload',
+      icon: <UploadCloud className="w-3.5 h-3.5" />,
     },
     {
-      title: 'Cameras',
-      href: '/dashboard/cameras',
-      icon: <Camera className="w-5 h-5" />,
-      submenu: [
-        {
-          title: 'Live View',
-          href: '/dashboard/cameras/live',
-          icon: <PlayCircle className="w-4 h-4" />,
-        },
-      ],
+      title: 'Timeline',
+      href: '/dashboard/forensics?tab=timeline',
+      icon: <Clock className="w-3.5 h-3.5" />,
     },
     {
-      title: 'Health',
-      href: '/dashboard/health',
-      icon: <Activity className="w-5 h-5" />,
-    },
-    {
-      title: 'AI Assistant',
+      title: 'AI Chat',
       href: '/dashboard/ai-assistant',
-      icon: <BrainCircuit className="w-5 h-5" />,
+      icon: <Bot className="w-3.5 h-3.5" />,
     },
     {
-      title: 'Test', // New Test menu
-      href: '/dashboard/test',
-      icon: <FlaskConical className="w-5 h-5" />,
-    },
-    {
-      title: 'Settings',
-      href: '/dashboard/settings',
-      icon: <Settings className="w-5 h-5" />,
+      title: 'Reports',
+      href: '/dashboard/forensics?tab=reports',
+      icon: <FileText className="w-3.5 h-3.5" />,
     },
   ];
 
-  // Admin-only items - Users option removed
-  const adminItems: SidebarItem[] = [];
-
-  // Animation variants
-  const sidebarVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: { 
-      opacity: 1, 
-      x: 0,
-      transition: { 
-        duration: 0.3,
-        when: "beforeChildren",
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, x: -10 },
-    visible: { opacity: 1, x: 0 }
-  };
-
-  const renderSidebarItems = (items: SidebarItem[], startDelay: number = 0) => {
-    return items.map((item, index) => {
-      const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-      
-      if (item.submenu) {
-        return (
-          <motion.div
-            key={item.href}
-            className="space-y-1"
-            variants={itemVariants}
-            transition={{ delay: startDelay + (index * 0.05) }}
-          >
-            <Collapsible 
-              open={openGroups[item.title.toLowerCase()] || isActive}
-              onOpenChange={() => toggleGroup(item.title.toLowerCase())}
+  return (
+    <>
+      <aside className="hidden md:flex fixed top-16 h-[calc(100vh-4rem)] w-64 flex-col border-r bg-background/95 backdrop-blur z-30 select-none">
+        <div className="flex flex-col h-full p-3.5 overflow-y-auto">
+          
+          {/* TOP PRIMARY ACTION: + CREATE CASE */}
+          <div className="mb-4">
+            <Button
+              onClick={() => setIsCreateCaseOpen(true)}
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:hover:bg-slate-200 dark:text-slate-900 font-semibold text-xs h-9 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-none"
             >
-              <CollapsibleTrigger className="w-full">
-                <div
+              <Plus className="w-4 h-4" />
+              Create Case
+            </Button>
+          </div>
+
+          {/* MAIN NAVIGATION */}
+          <div className="space-y-1">
+            {/* 1. Dashboard */}
+            <Link
+              href="/dashboard"
+              className={cn(
+                buttonVariants({ variant: 'ghost', size: 'sm' }),
+                "justify-start w-full text-xs font-medium rounded-lg h-9 px-3 transition-colors",
+                pathname === '/dashboard'
+                  ? "bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-semibold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+              )}
+            >
+              <LayoutDashboard className={cn("w-4 h-4 mr-2.5", pathname === '/dashboard' ? "text-slate-900 dark:text-white" : "text-muted-foreground")} />
+              <span>Dashboard</span>
+            </Link>
+
+            {/* 2. Cameras */}
+            <Link
+              href="/dashboard/cameras"
+              className={cn(
+                buttonVariants({ variant: 'ghost', size: 'sm' }),
+                "justify-start w-full text-xs font-medium rounded-lg h-9 px-3 transition-colors",
+                pathname === '/dashboard/cameras'
+                  ? "bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-semibold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+              )}
+            >
+              <Camera className={cn("w-4 h-4 mr-2.5", pathname === '/dashboard/cameras' ? "text-slate-900 dark:text-white" : "text-muted-foreground")} />
+              <span>Cameras</span>
+            </Link>
+
+            {/* 3. Cases - Collapsible Dropdown */}
+            <Collapsible open={isCasesOpen} onOpenChange={setIsCasesOpen} className="w-full">
+              <CollapsibleTrigger asChild>
+                <button
+                  type="button"
                   className={cn(
-                    buttonVariants({ variant: 'ghost' }),
-                    "justify-between w-full hover:bg-muted/80 transition-colors",
-                    isActive && "bg-muted font-medium"
+                    buttonVariants({ variant: 'ghost', size: 'sm' }),
+                    "w-full justify-between text-xs font-medium rounded-lg h-9 px-3 transition-colors",
+                    pathname.startsWith('/dashboard/forensics') || pathname === '/dashboard/ai-assistant'
+                      ? "text-foreground bg-muted/60 font-semibold"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
                   )}
                 >
                   <div className="flex items-center">
-                    <motion.div 
-                      whileHover={{ rotate: isActive ? 0 : 10 }}
-                      className="text-primary"
-                    >
-                      {item.icon}
-                    </motion.div>
-                    <span className="ml-2">{item.title}</span>
+                    <FolderOpen className={cn("w-4 h-4 mr-2.5", pathname.startsWith('/dashboard/forensics') ? "text-slate-900 dark:text-white" : "text-muted-foreground")} />
+                    <span>Cases</span>
                   </div>
-                  <motion.div
-                    animate={{ rotate: openGroups[item.title.toLowerCase()] ? 180 : 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <ChevronDown className="h-4 w-4" />
-                  </motion.div>
-                </div>
+                  <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200 text-muted-foreground", isCasesOpen ? "rotate-180" : "rotate-0")} />
+                </button>
               </CollapsibleTrigger>
-              <CollapsibleContent className="pl-8 space-y-1 pt-1">
-                {item.submenu.map((subitem, subIndex) => {
-                  const isSubActive = pathname === subitem.href;
+
+              <CollapsibleContent className="space-y-1 pl-4 pt-1 pb-1">
+                {caseSubItems.map((subItem) => {
+                  const isSubActive =
+                    subItem.href === '/dashboard/ai-assistant'
+                      ? pathname === '/dashboard/ai-assistant'
+                      : pathname === '/dashboard/forensics' &&
+                        typeof window !== 'undefined' &&
+                        window.location.search.includes(subItem.href.split('?')[1] || '');
+
                   return (
-                    <motion.div
-                      key={subitem.href}
-                      initial={{ opacity: 0, x: -5 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 + (subIndex * 0.05) }}
+                    <Link
+                      key={subItem.title}
+                      href={subItem.href}
+                      className={cn(
+                        buttonVariants({ variant: 'ghost', size: 'sm' }),
+                        "justify-start w-full text-[11px] font-medium rounded-md h-8 px-2.5 transition-colors border-l border-border",
+                        isSubActive
+                          ? "bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-semibold"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      )}
                     >
-                      <Link
-                        href={subitem.href}
-                        className={cn(
-                          buttonVariants({ variant: 'ghost', size: 'sm' }),
-                          "justify-start w-full transition-all",
-                          isSubActive ? "bg-muted font-medium" : "hover:bg-muted/50"
-                        )}
-                      >
-                        <motion.div whileHover={{ scale: 1.1 }} className="text-primary">
-                          {subitem.icon}
-                        </motion.div>
-                        <span className="ml-2">{subitem.title}</span>
-                      </Link>
-                    </motion.div>
+                      <span className="mr-2 text-muted-foreground">{subItem.icon}</span>
+                      <span>{subItem.title}</span>
+                    </Link>
                   );
                 })}
               </CollapsibleContent>
             </Collapsible>
-          </motion.div>
-        );
-      }
-      
-      return (
-        <motion.div
-          key={item.href}
-          variants={itemVariants}
-          transition={{ delay: startDelay + (index * 0.05) }}
-        >
-          <Link
-            href={item.href}
-            className={cn(
-              buttonVariants({ variant: 'ghost' }),
-              "justify-start w-full transition-colors",
-              isActive ? "bg-muted font-medium" : "hover:bg-muted/50"
-            )}
-          >
-            <motion.div 
-              whileHover={{ scale: 1.1 }}
-              className="text-primary"
-            >
-              {item.icon}
-            </motion.div>
-            <span className="ml-2">{item.title}</span>
-          </Link>
-        </motion.div>
-      );
-    });
-  };
+          </div>
 
-  return (
-    <div className="hidden md:flex fixed top-16 h-[calc(100vh-4rem)] w-64 flex-col border-r bg-background">
-      <div className="flex flex-col h-full p-4 pt-6 overflow-hidden">
-        {/* Non-scrollable sidebar content */}
-        <motion.div 
-          initial="hidden"
-          animate="visible"
-          variants={sidebarVariants}
-          className="flex flex-col gap-2"
-        >
-          {renderSidebarItems(sidebarItems, 0.3)}
-          
-          {user?.role === 'admin' && adminItems.length > 0 && (
-            <>
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
-                className="h-px bg-border my-4" 
+          {/* SECTION: INTELLIGENCE */}
+          <div className="my-4 pt-3 border-t border-border/60">
+            <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 font-mono">
+              Intelligence
+            </div>
+            <div className="space-y-1">
+              <Link
+                href="/dashboard/forensics?tab=threats"
+                className={cn(
+                  buttonVariants({ variant: 'ghost', size: 'sm' }),
+                  "justify-start w-full text-xs font-medium rounded-lg h-9 px-3 transition-colors text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                )}
+              >
+                <ShieldAlert className="w-4 h-4 mr-2.5 text-muted-foreground" />
+                <span>Threat Intel</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* SECTION: SETTINGS */}
+          <div className="mt-auto pt-3 border-t border-border/60">
+            <div className="space-y-1">
+              <Link
+                href="/dashboard/settings"
+                className={cn(
+                  buttonVariants({ variant: 'ghost', size: 'sm' }),
+                  "justify-start w-full text-xs font-medium rounded-lg h-9 px-3 transition-colors text-muted-foreground hover:text-foreground hover:bg-muted/60",
+                  pathname === '/dashboard/settings' && "bg-muted text-foreground font-semibold"
+                )}
+              >
+                <Settings className="w-4 h-4 mr-2.5 text-muted-foreground" />
+                <span>Settings</span>
+              </Link>
+            </div>
+          </div>
+
+        </div>
+      </aside>
+
+      {/* CREATE CASE MODAL DIALOG */}
+      <Dialog open={isCreateCaseOpen} onOpenChange={setIsCreateCaseOpen}>
+        <DialogContent className="sm:max-w-md bg-background border-border">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base font-bold text-foreground">
+              <FolderOpen className="w-5 h-5 text-foreground" />
+              Open New Forensic Investigation
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Register a security incident with incident details, priority, and source CCTV coverage.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleCreateCaseSubmit} className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-foreground">Case Title / Incident</label>
+              <Input
+                placeholder="e.g. Unauthorized Perimeter Ingress"
+                value={caseTitle}
+                onChange={(e) => setCaseTitle(e.target.value)}
+                required
+                className="text-xs h-9 bg-muted/40"
               />
-              {renderSidebarItems(adminItems, 0.9)}
-            </>
-          )}
-        </motion.div>
-      </div>
-    </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-foreground">Priority Level</label>
+                <select
+                  value={casePriority}
+                  onChange={(e) => setCasePriority(e.target.value)}
+                  className="w-full text-xs h-9 rounded-md border border-input bg-background px-3 text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                  <option value="CRITICAL">Critical</option>
+                  <option value="HIGH">High</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="LOW">Low</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-foreground">Primary CCTV Feed</label>
+                <select
+                  value={caseCamera}
+                  onChange={(e) => setCaseCamera(e.target.value)}
+                  className="w-full text-xs h-9 rounded-md border border-input bg-background px-3 text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                  <option value="Entrance">Entrance (Webcam)</option>
+                  <option value="Backyard">Backyard</option>
+                  <option value="Lobby">Lobby</option>
+                  <option value="Parking">Parking</option>
+                  <option value="Warehouse">Warehouse</option>
+                  <option value="Office">Office</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-foreground">Location</label>
+              <Input
+                placeholder="e.g. Building A - Sector 3"
+                value={caseLocation}
+                onChange={(e) => setCaseLocation(e.target.value)}
+                className="text-xs h-9 bg-muted/40"
+              />
+            </div>
+
+            <DialogFooter className="pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsCreateCaseOpen(false)}
+                className="text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                className="text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
+              >
+                Create Investigation
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

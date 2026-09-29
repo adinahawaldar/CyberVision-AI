@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/providers/auth-provider';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/layout/mode-toggle';
-import { Shield, Bell, X, Menu, LogOut, Settings as SettingsIcon } from 'lucide-react';
+import { Shield, Bell, X, Menu, LogOut, Settings as SettingsIcon, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,13 +28,13 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useNotifications } from '@/lib/hooks/use-notifications';
 import { useGeneralSettings } from '@/hooks/use-general-settings';
 import { motion } from 'framer-motion';
-import Link from 'next/link'; // Import Link
+import Link from 'next/link';
 
 export default function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { notifications, clearNotification, markAllAsRead, markAsRead } = useNotifications(); // Replaced removeNotification with clearNotification
+  const { notifications, clearNotification, markAllAsRead, markAsRead } = useNotifications();
   const unreadCount = notifications.filter(n => !n.read).length;
   const { systemName } = useGeneralSettings();
 
@@ -84,38 +85,47 @@ export default function Header() {
       transition={{ duration: 0.3 }}
       className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
     >
-      <div className="flex h-16 items-center px-4 md:px-6">
-        <div className="md:hidden mr-2">
-          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="pr-0 sm:max-w-xs w-[300px]">
-              <SheetHeader className="mb-4">
-                <SheetTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  {systemName}
-                </SheetTitle>
-              </SheetHeader>
-              {/* Mobile navigation links rendered by the sidebar component */}
-            </SheetContent>
-          </Sheet>
+      <div className="flex h-16 items-center px-4 md:px-6 justify-between">
+        <div className="flex items-center">
+          <div className="md:hidden mr-2">
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="pr-0 sm:max-w-xs w-[300px]">
+                <SheetHeader className="mb-4">
+                  <SheetTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-red-500" />
+                    FORENSIGHT
+                  </SheetTitle>
+                </SheetHeader>
+              </SheetContent>
+            </Sheet>
+          </div>
+          
+          <Link href="/dashboard" className="flex items-center gap-2.5 mr-6 group">
+            <div className="w-8 h-8 rounded-lg bg-red-600/10 border border-red-500/30 flex items-center justify-center text-red-600 dark:text-red-400 group-hover:bg-red-600/20 transition-colors">
+              <Shield className="h-4 w-4" />
+            </div>
+            <span className="text-lg font-black tracking-wider text-foreground font-mono">
+              FORENSIGHT
+            </span>
+          </Link>
+        </div>
+
+        {/* Search Bar in center */}
+        <div className="hidden sm:flex items-center relative max-w-sm w-full mx-4">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <Input
+            type="search"
+            placeholder="Search cases, cameras, evidence..."
+            className="pl-9 h-9 w-full bg-muted/40 border-border/80 focus-visible:ring-1 text-sm rounded-lg"
+          />
         </div>
         
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="flex items-center gap-2 mr-6"
-        >
-          <Shield className="h-6 w-6 text-primary" />
-          <span className="text-lg font-semibold tracking-tight hidden md:block">{systemName}</span>
-        </motion.div>
-        
-        <div className="flex-1 flex items-center justify-end ml-auto gap-4 md:gap-6 lg:gap-8">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3">
             <Popover>
               <PopoverTrigger asChild>
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -246,7 +256,6 @@ export default function Header() {
             </DropdownMenu>
           </div>
         </div>
-      </div>
-    </motion.header>
-  );
-}
+      </motion.header>
+    );
+  }

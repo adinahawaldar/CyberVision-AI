@@ -38,8 +38,8 @@ export default function RootLayout({
         <ClerkProvider>
           <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem
+          defaultTheme="light"
+          enableSystem={false}
           disableTransitionOnChange
           >
           <AuthProvider>
