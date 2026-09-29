@@ -1,38 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  FolderOpen,
-  FileText,
-  Shield,
-  ShieldAlert,
-  AlertTriangle,
-  Upload,
-  CheckCircle,
-  Activity,
-  Database,
-  Cpu,
-  Eye,
-  Bot,
-  MessageSquare,
-  Plus,
-  Sparkles,
-  ExternalLink,
-  Search,
-  Filter,
-  Clock,
-  Fingerprint,
-  Hash,
-  FileCheck,
-  Server,
-  Layers,
-  ChevronRight,
-  Download,
-  Terminal,
-  Network
-} from "lucide-react";
+import Link from "next/link";
 import {
   AreaChart,
   Area,
@@ -45,652 +15,544 @@ import {
   Pie,
   Cell
 } from "recharts";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Plus,
+  Upload,
+  Eye,
+  Download,
+  Camera,
+  FileVideo
+} from "lucide-react";
+import CreateCaseDialog from "@/components/cases/create-case-dialog";
+import { useCases } from "@/lib/services/caseService";
 
-// Sample forensic case metrics
-const initialStats = [
-  { label: "Active Investigations", value: "14", icon: FolderOpen, color: "#38bdf8", trend: "+3 this week" },
-  { label: "Hashed Evidence Vault", value: "128", icon: Database, color: "#a855f7", trend: "100% SHA-256 Verified" },
-  { label: "Timeline Events Synced", value: "1,420", icon: Clock, color: "#34d399", trend: "CCTV + Log synchronized" },
-  { label: "High-Risk Threat IOCs", value: "9", icon: ShieldAlert, color: "#f43f5e", trend: "2 Critical Infiltrations" },
+// 7-day incident activity data
+const activityTrendData = [
+  { day: "Mon", incidents: 4, alerts: 1 },
+  { day: "Tue", incidents: 7, alerts: 2 },
+  { day: "Wed", incidents: 3, alerts: 0 },
+  { day: "Thu", incidents: 8, alerts: 3 },
+  { day: "Fri", incidents: 12, alerts: 4 },
+  { day: "Sat", incidents: 6, alerts: 1 },
+  { day: "Sun", incidents: 5, alerts: 1 },
 ];
 
-// Activity Trend Chart Data
-const activityData = [
-  { time: "00:00", events: 45, alerts: 4 },
-  { time: "04:00", events: 22, alerts: 1 },
-  { time: "08:00", events: 88, alerts: 9 },
-  { time: "12:00", events: 140, alerts: 14 },
-  { time: "16:00", events: 195, alerts: 21 },
-  { time: "20:00", events: 110, alerts: 11 },
-  { time: "23:59", events: 65, alerts: 6 },
-];
-
-// Evidence Type Breakdown Data
-const evidenceTypesData = [
-  { name: "CCTV Frames", value: 45, color: "#38bdf8" },
-  { name: "Server Logs", value: 30, color: "#a855f7" },
-  { name: "PCAP Captures", value: 15, color: "#34d399" },
-  { name: "Auth / EVTX", value: 10, color: "#f59e0b" },
-];
-
-// Sample Cases
-const initialCases = [
-  {
-    id: "CAS-2026-004",
-    title: "Perimeter Breach & Surveillance Cam 02 Tamper",
-    severity: "CRITICAL",
-    status: "INVESTIGATING",
-    evidenceCount: 18,
-    lead: "Agent Hawke",
-    lastUpdated: "12m ago",
-    syncedFeed: "North Gate Cam 02",
-    sha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-  },
-  {
-    id: "CAS-2026-003",
-    title: "Unauthorized Late-Night Data Center Ingress",
-    severity: "HIGH",
-    status: "EVIDENCE_COLLECTED",
-    evidenceCount: 32,
-    lead: "Analyst Vance",
-    lastUpdated: "2h ago",
-    syncedFeed: "Server Room Interior B",
-    sha256: "7d793037a0760186574b0282f2f435e70f1602e615fa93e52f3fdd70ec57d0ec"
-  },
-  {
-    id: "CAS-2026-002",
-    title: "Weapons Anomaly Discrimination - Rifle vs Umbrella",
-    severity: "MEDIUM",
-    status: "AI_PARSED",
-    evidenceCount: 24,
-    lead: "CyberVision AI Engine",
-    lastUpdated: "5h ago",
-    syncedFeed: "Front Plaza Patrol",
-    sha256: "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb"
-  },
-  {
-    id: "CAS-2026-001",
-    title: "Suspicious Loitering Outside Vault Loading Bay",
-    severity: "INFO",
-    status: "CLOSED",
-    evidenceCount: 11,
-    lead: "Admin Hawaldar",
-    lastUpdated: "1d ago",
-    syncedFeed: "Loading Dock 01",
-    sha256: "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a"
-  }
-];
-
-// Sample IOCs
-const sampleIocs = [
-  { indicator: "194.26.29.112", type: "IP", reputation: "98% Malicious (AbuseIPDB)", originCase: "CAS-2026-004", status: "BLOCKED" },
-  { indicator: "45.154.255.88", type: "IP", reputation: "85% Scanner / Brute Force", originCase: "CAS-2026-003", status: "FLAGGED" },
-  { indicator: "c4ca4238a0b923820dcc509a6f75849b", type: "MD5", reputation: "Trojan.Dropper (VirusTotal 48/72)", originCase: "CAS-2026-004", status: "QUARANTINED" },
-  { indicator: "9a2f7c118e69e4f5a8b27d2c3491d0e1", type: "SHA-256", reputation: "Known Exfiltration Tool", originCase: "CAS-2026-003", status: "ISOLATED" }
-];
-
-// MITRE ATT&CK Matrix Sample
-const mitreTactics = [
-  { tactic: "Initial Access", technique: "T1190 - Exploit Public-Facing App", severity: "HIGH" },
-  { tactic: "Persistence", technique: "T1078 - Valid Accounts", severity: "MEDIUM" },
-  { tactic: "Privilege Escalation", technique: "T1068 - Exploitation for Priv Escalation", severity: "CRITICAL" },
-  { tactic: "Defense Evasion", technique: "T1070 - Indicator Removal on Host", severity: "HIGH" },
-  { tactic: "Exfiltration", technique: "T1048 - Exfiltration Over Alternative Protocol", severity: "CRITICAL" }
+// Evidence source breakdown data
+const evidenceSourceData = [
+  { source: "CCTV Footage", percentage: 53 },
+  { source: "System Logs", percentage: 25 },
+  { source: "Network Captures", percentage: 14 },
+  { source: "Documents & Reports", percentage: 8 },
 ];
 
 export default function ForensicsDashboardPage() {
   const searchParams = useSearchParams();
-  const [selectedTab, setSelectedTab] = useState("overview");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [cases, setCases] = useState(initialCases);
-  const [isVerifying, setIsVerifying] = useState<string | null>(null);
-  const [verifiedHash, setVerifiedHash] = useState<Record<string, boolean>>({});
+  const currentTab = searchParams.get("tab") || "overview";
+  const [isMounted, setIsMounted] = useState(false);
+  const { cases } = useCases();
 
   useEffect(() => {
-    const tab = searchParams.get("tab");
-    if (tab && ["overview", "cases", "evidence", "timeline", "threats", "reports"].includes(tab)) {
-      setSelectedTab(tab);
-    }
-  }, [searchParams]);
+    setIsMounted(true);
+  }, []);
 
-  const handleVerifyHash = (caseId: string) => {
-    setIsVerifying(caseId);
-    setTimeout(() => {
-      setVerifiedHash(prev => ({ ...prev, [caseId]: true }));
-      setIsVerifying(null);
-    }, 700);
-  };
+  // Compute dynamic metrics from active cases
+  const totalCases = cases.length;
+  const activeIncidents = cases.filter(c => c.severity === "CRITICAL" || c.severity === "HIGH").length;
+  const totalEvidence = cases.reduce((acc, c) => acc + (c.attachedFiles?.length || c.evidenceCount || 1), 0);
 
-  const filteredCases = cases.filter(c =>
-    c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.lead.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const dynamicSeverityData = [
+    { name: "Critical", value: cases.filter(c => c.severity === "CRITICAL").length, color: "#ef4444" },
+    { name: "High", value: cases.filter(c => c.severity === "HIGH").length, color: "#f97316" },
+    { name: "Medium", value: cases.filter(c => c.severity === "MEDIUM").length, color: "#3b82f6" },
+    { name: "Low", value: cases.filter(c => c.severity === "LOW").length, color: "#10b981" },
+  ];
 
-  return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 bg-[#0a0c10] min-h-screen text-slate-100">
-      
-      {/* Top Header & Fast Actions */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-white/10 pb-6">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
-              <ShieldAlert className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white flex items-center gap-2">
-                Digital Forensics & Chain-of-Custody
-              </h1>
-              <p className="text-sm text-slate-400">
-                Synchronized CCTV video intelligence, cryptographic evidence verification, and incident reconstruction.
-              </p>
-            </div>
+  // SUB-SECTION 1: EVIDENCE VAULT (when clicked from sidebar)
+  if (currentTab === "evidence") {
+    return (
+      <div className="flex-1 space-y-5 max-w-7xl mx-auto pb-10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              Evidence Vault
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+              Cryptographically sealed CCTV footage and digital evidence artifacts
+            </p>
           </div>
+          <CreateCaseDialog
+            trigger={
+              <Button size="sm" className="h-8 px-3 text-xs bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200">
+                <Plus className="w-3.5 h-3.5 mr-1" /> New Case
+              </Button>
+            }
+          />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            onClick={() => setSelectedTab("cases")}
-            className="bg-red-600 hover:bg-red-700 text-white shadow-md text-xs font-semibold h-9 px-4 rounded-lg"
-          >
-            <Plus className="w-4 h-4 mr-1.5 stroke-[2.5]" />
-            New Investigation
+        <div className="p-6 border border-dashed border-border rounded-lg bg-muted/20 flex flex-col items-center justify-center text-center space-y-2">
+          <Upload className="w-5 h-5 text-muted-foreground" />
+          <div className="space-y-0.5">
+            <h3 className="text-xs font-semibold text-foreground">Upload Evidence Artifacts</h3>
+            <p className="text-[11px] text-muted-foreground max-w-sm">
+              CCTV video clips, log files, or packet captures. SHA-256 hash generated automatically.
+            </p>
+          </div>
+          <Button size="sm" variant="outline" className="h-7 text-xs border-border mt-1">
+            Select Files
           </Button>
         </div>
-      </div>
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {initialStats.map((stat, i) => {
-          const Icon = stat.icon;
-          return (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08 }}
-            >
-              <Card className="bg-[#12161f]/80 border-white/10 backdrop-blur-md hover:border-cyan-500/30 transition-all duration-300">
-                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                  <CardTitle className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-                    {stat.label}
-                  </CardTitle>
-                  <div
-                    className="w-8 h-8 rounded-md flex items-center justify-center"
-                    style={{ background: `${stat.color}15`, color: stat.color }}
-                  >
-                    <Icon className="w-4 h-4" />
+        <Card className="border border-border bg-card">
+          <CardHeader className="p-3.5 border-b border-border">
+            <CardTitle className="text-xs font-semibold text-foreground">
+              Sealed Evidence Ledger
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-muted/40 border-b border-border text-muted-foreground">
+                  <tr>
+                    <th className="px-3.5 py-2 font-medium">File Name</th>
+                    <th className="px-3.5 py-2 font-medium">Case</th>
+                    <th className="px-3.5 py-2 font-medium">Type</th>
+                    <th className="px-3.5 py-2 font-medium">SHA-256 Hash</th>
+                    <th className="px-3.5 py-2 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  <tr className="hover:bg-muted/20">
+                    <td className="px-3.5 py-2.5 font-mono text-foreground">cctv_frame_tamper_02.mp4</td>
+                    <td className="px-3.5 py-2.5 text-muted-foreground">CAS-2026-004</td>
+                    <td className="px-3.5 py-2.5 text-muted-foreground">Video / H.264</td>
+                    <td className="px-3.5 py-2.5 font-mono text-[11px] text-muted-foreground">8f4b23...a9e0</td>
+                    <td className="px-3.5 py-2.5">
+                      <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">Verified</span>
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-muted/20">
+                    <td className="px-3.5 py-2.5 font-mono text-foreground">auth_failure_stream.log</td>
+                    <td className="px-3.5 py-2.5 text-muted-foreground">CAS-2026-003</td>
+                    <td className="px-3.5 py-2.5 text-muted-foreground">System Log</td>
+                    <td className="px-3.5 py-2.5 font-mono text-[11px] text-muted-foreground">3c7e91...d112</td>
+                    <td className="px-3.5 py-2.5">
+                      <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">Verified</span>
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-muted/20">
+                    <td className="px-3.5 py-2.5 font-mono text-foreground">perimeter_raw_packet.pcap</td>
+                    <td className="px-3.5 py-2.5 text-muted-foreground">CAS-2026-004</td>
+                    <td className="px-3.5 py-2.5 text-muted-foreground">Network PCAP</td>
+                    <td className="px-3.5 py-2.5 font-mono text-[11px] text-muted-foreground">e2098b...56cc</td>
+                    <td className="px-3.5 py-2.5">
+                      <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">Verified</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // SUB-SECTION 2: TIMELINE (when clicked from sidebar)
+  if (currentTab === "timeline") {
+    return (
+      <div className="flex-1 space-y-5 max-w-7xl mx-auto pb-10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              Incident Timeline
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+              Chronological sequence of physical camera events and security logs
+            </p>
+          </div>
+          <CreateCaseDialog
+            trigger={
+              <Button size="sm" className="h-8 px-3 text-xs bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200">
+                <Plus className="w-3.5 h-3.5 mr-1" /> New Case
+              </Button>
+            }
+          />
+        </div>
+
+        <Card className="border border-border bg-card">
+          <CardHeader className="p-3.5 border-b border-border">
+            <CardTitle className="text-xs font-semibold text-foreground">
+              CAS-2026-004 &bull; Event Sequence
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 space-y-4">
+            {[
+              { time: "22:14:02", title: "Person Detected in Restricted Perimeter", feed: "North Gate", note: "Subject detected climbing outer fence boundary" },
+              { time: "22:14:38", title: "Perimeter Intrusion Alert Triggered", feed: "Rules Engine", note: "Alert notification dispatched to guard station" },
+              { time: "22:15:10", title: "Camera Feed Signal Disrupted", feed: "North Gate", note: "Hardware RTSP connection severed; standby engaged" },
+              { time: "22:16:04", title: "Failed Authentication Attempts (IP 194.26.29.112)", feed: "Firewall", note: "14 consecutive invalid password attempts" },
+              { time: "22:18:22", title: "Case Created & Evidence Preserved", feed: "Agent Hawke", note: "Incident sealed with SHA-256 evidence integrity" }
+            ].map((ev, idx) => (
+              <div key={idx} className="flex items-start gap-3">
+                <span className="font-mono text-xs text-muted-foreground pt-0.5 w-16 shrink-0">
+                  {ev.time}
+                </span>
+                <div className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500 mt-1.5 shrink-0" />
+                <div className="flex-1 p-2.5 rounded-md bg-muted/40 border border-border/60 space-y-0.5">
+                  <div className="flex items-center justify-between">
+                    <h5 className="text-xs font-semibold text-foreground">{ev.title}</h5>
+                    <span className="text-[10px] text-muted-foreground font-mono">{ev.feed}</span>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-white tracking-tight">{stat.value}</div>
-                  <p className="text-xs text-slate-400 mt-1 flex items-center gap-1 font-mono">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                    {stat.trend}
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          );
-        })}
+                  <p className="text-xs text-muted-foreground">{ev.note}</p>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // SUB-SECTION 3: REPORTS (when clicked from sidebar)
+  if (currentTab === "reports") {
+    return (
+      <div className="flex-1 space-y-5 max-w-7xl mx-auto pb-10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              Investigation Reports
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+              Structured forensic dossiers and case summary documents
+            </p>
+          </div>
+          <CreateCaseDialog
+            trigger={
+              <Button size="sm" className="h-8 px-3 text-xs bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200">
+                <Plus className="w-3.5 h-3.5 mr-1" /> New Case
+              </Button>
+            }
+          />
+        </div>
+
+        <Card className="border border-border bg-card">
+          <CardContent className="p-3.5 space-y-2.5">
+            {[
+              { id: "REP-2026-088", title: "Forensics Audit - Perimeter Gate Breach", caseId: "CAS-2026-004", date: "29 Sep 2026", pages: 12 },
+              { id: "REP-2026-087", title: "Server Room Unauthorized Access Investigation", caseId: "CAS-2026-003", date: "28 Sep 2026", pages: 8 },
+              { id: "REP-2026-086", title: "Weapons Anomaly Discrimination Dossier", caseId: "CAS-2026-002", date: "26 Sep 2026", pages: 16 }
+            ].map((rep) => (
+              <div key={rep.id} className="p-3 rounded-md bg-muted/40 border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-semibold text-foreground">{rep.id}</span>
+                    <span className="text-xs text-muted-foreground">&bull;</span>
+                    <span className="text-xs text-muted-foreground">{rep.caseId}</span>
+                  </div>
+                  <h4 className="text-xs font-semibold text-foreground">{rep.title}</h4>
+                  <p className="text-[11px] text-muted-foreground">{rep.date} &bull; {rep.pages} pages</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button size="sm" variant="outline" className="h-7 text-xs px-2.5 border-border">
+                    <Eye className="w-3 h-3 mr-1" /> View
+                  </Button>
+                  <Button size="sm" variant="outline" className="h-7 text-xs px-2.5 border-border">
+                    <Download className="w-3 h-3 mr-1" /> PDF
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // DEFAULT / CASE MANAGEMENT VIEW: CLEAN GRAPHICAL OVERVIEW
+  return (
+    <div className="flex-1 space-y-5 max-w-7xl mx-auto pb-10">
+      
+      {/* TOP HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            Case Overview
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            Investigation analytics, incident activity, and recent cases
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 px-3 text-xs border-border"
+          >
+            Last 7 Days
+          </Button>
+
+          <CreateCaseDialog
+            trigger={
+              <Button
+                size="sm"
+                className="h-8 px-3 text-xs bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
+              >
+                <Plus className="w-3.5 h-3.5 mr-1.5" />
+                New Case
+              </Button>
+            }
+          />
+        </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <Tabs defaultValue="overview" value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-        <TabsList className="bg-[#12161f] border border-white/10 p-1 rounded-xl">
-          <TabsTrigger value="overview" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300">
-            <Activity className="w-4 h-4 mr-2" /> Overview & Trends
-          </TabsTrigger>
-          <TabsTrigger value="cases" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300">
-            <FolderOpen className="w-4 h-4 mr-2" /> Active Cases ({cases.length})
-          </TabsTrigger>
-          <TabsTrigger value="evidence" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300">
-            <Fingerprint className="w-4 h-4 mr-2" /> SHA-256 Vault
-          </TabsTrigger>
-          <TabsTrigger value="timeline" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300">
-            <Clock className="w-4 h-4 mr-2" /> CCTV + Log Timeline
-          </TabsTrigger>
-          <TabsTrigger value="threats" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300">
-            <Network className="w-4 h-4 mr-2" /> MITRE & Threat IOCs
-          </TabsTrigger>
-          <TabsTrigger value="reports" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300">
-            <FileText className="w-4 h-4 mr-2" /> Reports
-          </TabsTrigger>
-        </TabsList>
+      {/* KPI METRIC CARDS */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Card className="p-3.5 border border-border bg-card">
+          <span className="text-xs text-muted-foreground">Total Cases</span>
+          <div className="text-xl font-bold text-foreground mt-0.5">{totalCases}</div>
+          <span className="text-[11px] text-muted-foreground">Registered investigations</span>
+        </Card>
+        <Card className="p-3.5 border border-border bg-card">
+          <span className="text-xs text-muted-foreground">Active Incidents</span>
+          <div className="text-xl font-bold text-foreground mt-0.5">{activeIncidents}</div>
+          <span className="text-[11px] text-muted-foreground">Critical & high priority</span>
+        </Card>
+        <Card className="p-3.5 border border-border bg-card">
+          <span className="text-xs text-muted-foreground">Evidence Files</span>
+          <div className="text-xl font-bold text-foreground mt-0.5">{totalEvidence}</div>
+          <span className="text-[11px] text-muted-foreground">Footages & documents</span>
+        </Card>
+        <Card className="p-3.5 border border-border bg-card">
+          <span className="text-xs text-muted-foreground">Resolution Rate</span>
+          <div className="text-xl font-bold text-foreground mt-0.5">92%</div>
+          <span className="text-[11px] text-muted-foreground">Average 1.8 days</span>
+        </Card>
+      </div>
 
-        {/* TAB 1: OVERVIEW & ANALYTICS */}
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            {/* Area Chart: Investigation & Alert Volume */}
-            <Card className="lg:col-span-2 bg-[#12161f]/80 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-cyan-400" />
-                  Forensic Incident Ingestion (24h Window)
-                </CardTitle>
-                <CardDescription className="text-xs text-slate-400">
-                  Cross-correlated events captured between CCTV AI triggers and network security logs.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="h-[280px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={activityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorEvents" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#38bdf8" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#38bdf8" stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="colorAlerts" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-                    <XAxis dataKey="time" stroke="#64748b" fontSize={12} />
-                    <YAxis stroke="#64748b" fontSize={12} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#161b22",
-                        borderColor: "#ffffff15",
-                        borderRadius: "8px",
-                        color: "#fff"
-                      }}
-                    />
-                    <Area type="monotone" dataKey="events" stroke="#38bdf8" strokeWidth={2} fillOpacity={1} fill="url(#colorEvents)" name="Synced Events" />
-                    <Area type="monotone" dataKey="alerts" stroke="#f43f5e" strokeWidth={2} fillOpacity={1} fill="url(#colorAlerts)" name="Critical Threats" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+      {/* GRAPHICAL CHARTS SECTION */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        
+        {/* Incident Activity Trend (2 columns) */}
+        <Card className="lg:col-span-2 border border-border bg-card">
+          <CardHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
+            <CardTitle className="text-xs font-semibold text-foreground">
+              Incident Activity (7-Day Trend)
+            </CardTitle>
+            <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-slate-600 dark:bg-slate-300" />
+                Incidents
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-red-500" />
+                Alerts
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 h-[240px]">
+            {isMounted && (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={activityTrendData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="incidentsGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#64748b" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#64748b" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#88888820" />
+                  <XAxis dataKey="day" stroke="#888888" fontSize={11} tickLine={false} />
+                  <YAxis stroke="#888888" fontSize={11} tickLine={false} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "var(--card)",
+                      borderColor: "var(--border)",
+                      borderRadius: "6px",
+                      fontSize: "12px"
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="incidents"
+                    stroke="#475569"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#incidentsGrad)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="alerts"
+                    stroke="#ef4444"
+                    strokeWidth={2}
+                    fillOpacity={0}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
 
-            {/* Pie Chart: Evidence Distribution */}
-            <Card className="bg-[#12161f]/80 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-                  <Layers className="w-5 h-5 text-purple-400" />
-                  Evidence Source Breakdown
-                </CardTitle>
-                <CardDescription className="text-xs text-slate-400">
-                  Forensic artifact distribution currently under chain-of-custody.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="h-[220px] flex items-center justify-center">
+        {/* Priority Breakdown (1 column) */}
+        <Card className="border border-border bg-card">
+          <CardHeader className="p-4 border-b border-border">
+            <CardTitle className="text-xs font-semibold text-foreground">
+              Cases by Priority
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 flex flex-col items-center justify-center">
+            {isMounted && (
+              <div className="w-full h-[150px] flex items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={evidenceTypesData}
+                      data={dynamicSeverityData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={55}
-                      outerRadius={80}
-                      paddingAngle={4}
+                      innerRadius={42}
+                      outerRadius={65}
+                      paddingAngle={3}
                       dataKey="value"
                     >
-                      {evidenceTypesData.map((entry, index) => (
+                      {dynamicSeverityData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: "#161b22",
-                        borderColor: "#ffffff15",
-                        borderRadius: "8px",
-                        color: "#fff"
+                        backgroundColor: "var(--card)",
+                        borderColor: "var(--border)",
+                        borderRadius: "6px",
+                        fontSize: "12px"
                       }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
-              </CardContent>
-              <div className="grid grid-cols-2 gap-2 px-4 pb-4 text-xs">
-                {evidenceTypesData.map(item => (
-                  <div key={item.name} className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: item.color }} />
-                    <span className="text-slate-300">{item.name}</span>
-                    <span className="text-slate-500 ml-auto font-mono">{item.value}%</span>
-                  </div>
-                ))}
               </div>
-            </Card>
-          </div>
+            )}
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 w-full mt-2 pt-2 border-t border-border text-xs">
+              {dynamicSeverityData.map((item) => (
+                <div key={item.name} className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-muted-foreground text-[11px]">
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                    {item.name}
+                  </span>
+                  <span className="font-semibold text-foreground text-[11px]">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-          {/* Quick Action Matrix Banner */}
-          <div className="p-6 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-[#12161f] to-purple-950/30 border border-cyan-500/20 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-1">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-cyan-400" />
-                Autonomous Multi-Modal Case Correlator Active
-              </h3>
-              <p className="text-xs md:text-sm text-slate-400 max-w-2xl">
-                Every video detection tagged by YOLOv8 is cryptographically sealed and correlated against
-                network traffic and authentication logs to prevent video fabrication or post-incident evidence tampering.
-              </p>
-            </div>
-            <div className="flex gap-3 shrink-0">
-              <Button
-                variant="outline"
-                className="border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10"
-                onClick={() => setSelectedTab("evidence")}
-              >
-                <Upload className="w-4 h-4 mr-2" /> Upload Artifact
-              </Button>
-              <Button
-                className="bg-purple-600 hover:bg-purple-500 text-white"
-                onClick={() => setSelectedTab("cases")}
-              >
-                <FolderOpen className="w-4 h-4 mr-2" /> View Cases
-              </Button>
-            </div>
-          </div>
-        </TabsContent>
+      {/* EVIDENCE DISTRIBUTION & RECENT INCIDENTS */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        
+        {/* Evidence Sources Breakdown */}
+        <Card className="border border-border bg-card">
+          <CardHeader className="p-4 border-b border-border">
+            <CardTitle className="text-xs font-semibold text-foreground">
+              Evidence Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 space-y-3">
+            {evidenceSourceData.map((item) => (
+              <div key={item.source} className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">{item.source}</span>
+                  <span className="font-semibold text-foreground">{item.percentage}%</span>
+                </div>
+                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-slate-800 dark:bg-slate-200 rounded-full"
+                    style={{ width: `${item.percentage}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
 
-        {/* TAB 2: ACTIVE CASES */}
-        <TabsContent value="cases" className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#12161f] p-3 rounded-xl border border-white/10">
-            <div className="relative flex-1 max-w-md">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search by Case ID, title, or lead..."
-                className="w-full bg-[#181d28] border border-white/10 rounded-lg pl-9 pr-4 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="border-white/10 text-slate-400 text-xs">
-                Showing {filteredCases.length} of {cases.length} cases
-              </Badge>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {filteredCases.map(c => (
-              <Card key={c.id} className="bg-[#12161f]/90 border-white/10 hover:border-cyan-500/30 transition-all">
-                <CardContent className="p-4 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                  <div className="space-y-1.5 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-xs font-bold text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/40">
-                        {c.id}
-                      </span>
-                      <h4 className="text-base font-semibold text-white">{c.title}</h4>
+        {/* Recent Cases Overview (2 columns) - CASE NAME SHOWN FIRST */}
+        <Card className="lg:col-span-2 border border-border bg-card">
+          <CardHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
+            <CardTitle className="text-xs font-semibold text-foreground">
+              Recent Cases
+            </CardTitle>
+            <span className="text-[11px] text-muted-foreground">Showing {cases.length} investigations</span>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y divide-border">
+              {cases.slice(0, 6).map((c) => (
+                <div key={c.id} className="p-3.5 flex items-center justify-between gap-3 text-xs hover:bg-muted/20 transition-colors">
+                  <div className="space-y-1 min-w-0 flex-1">
+                    {/* CASE NAME FIRST */}
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/dashboard/cases/${c.id}`}
+                        className="text-xs font-bold text-foreground hover:underline truncate"
+                      >
+                        {c.name}
+                      </Link>
                       <Badge
-                        className={
+                        variant="outline"
+                        className={`text-[10px] px-1.5 py-0 h-4 shrink-0 font-medium ${
                           c.severity === "CRITICAL"
-                            ? "bg-red-500/20 text-red-400 border-red-500/30"
+                            ? "text-red-600 border-red-200 bg-red-50 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50"
                             : c.severity === "HIGH"
-                            ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
-                            : "bg-blue-500/20 text-blue-400 border-blue-500/30"
-                        }
+                            ? "text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/50"
+                            : "text-slate-600 border-slate-200 bg-slate-50 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800"
+                        }`}
                       >
                         {c.severity}
                       </Badge>
                     </div>
 
-                    <div className="flex items-center gap-4 text-xs text-slate-400 flex-wrap">
-                      <span>Source: <strong className="text-slate-300">{c.syncedFeed}</strong></span>
-                      <span>Lead: <strong className="text-slate-300">{c.lead}</strong></span>
-                      <span>Artifacts: <strong className="text-slate-300">{c.evidenceCount} files</strong></span>
-                      <span>Updated: <strong className="text-slate-300">{c.lastUpdated}</strong></span>
-                    </div>
+                    {/* CASE METADATA (CCTV OR ATTACHED EVIDENCE) */}
+                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap">
+                      <span className="font-mono text-[10px] text-muted-foreground">{c.id}</span>
+                      <span>&bull;</span>
 
-                    <div className="flex items-center gap-2 text-[11px] font-mono text-slate-500 bg-[#0c0e14] px-2.5 py-1 rounded border border-white/5 overflow-hidden">
-                      <Hash className="w-3 h-3 text-cyan-500 shrink-0" />
-                      <span className="truncate">SHA-256: {c.sha256}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-white/10 hover:bg-white/10 text-xs text-slate-300"
-                      onClick={() => handleVerifyHash(c.id)}
-                      disabled={isVerifying === c.id}
-                    >
-                      {isVerifying === c.id ? (
-                        <Activity className="w-3.5 h-3.5 mr-1.5 animate-spin text-cyan-400" />
-                      ) : verifiedHash[c.id] ? (
-                        <CheckCircle className="w-3.5 h-3.5 mr-1.5 text-emerald-400" />
-                      ) : (
-                        <Fingerprint className="w-3.5 h-3.5 mr-1.5 text-cyan-400" />
+                      {/* CCTV Camera Link */}
+                      {c.cctvFeed && (
+                        <>
+                          <span className="inline-flex items-center gap-1 text-foreground font-medium">
+                            <Camera className="w-3 h-3 text-muted-foreground" />
+                            CCTV: {c.cctvFeed}
+                          </span>
+                          <span>&bull;</span>
+                        </>
                       )}
-                      {verifiedHash[c.id] ? "Verified" : "Verify Hash"}
-                    </Button>
 
-                    <Button size="sm" className="bg-cyan-600 hover:bg-cyan-500 text-xs text-white">
-                      Investigate <ChevronRight className="w-3.5 h-3.5 ml-1" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
+                      {/* Uploaded Evidence Count */}
+                      {c.attachedFiles && c.attachedFiles.length > 0 && (
+                        <>
+                          <span className="inline-flex items-center gap-1 text-foreground font-medium">
+                            <FileVideo className="w-3 h-3 text-muted-foreground" />
+                            {c.attachedFiles.length} file{c.attachedFiles.length > 1 ? "s" : ""}
+                          </span>
+                          <span>&bull;</span>
+                        </>
+                      )}
 
-        {/* TAB 3: SHA-256 EVIDENCE VAULT */}
-        <TabsContent value="evidence" className="space-y-6">
-          <div className="p-8 border-2 border-dashed border-cyan-500/30 rounded-2xl bg-[#12161f]/40 flex flex-col items-center justify-center text-center space-y-4">
-            <div className="w-14 h-14 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-              <Upload className="w-6 h-6" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-base font-bold text-white">Drag and Drop Forensic Evidence</h3>
-              <p className="text-xs text-slate-400 max-w-md">
-                Upload CCTV raw footage (.mp4, .mkv), network captures (.pcap), Windows event logs (.evtx),
-                or server logs (.log, .json). Automatic cryptographic SHA-256 seal generated on arrival.
-              </p>
-            </div>
-            <Button className="bg-cyan-600 hover:bg-cyan-500 text-white text-xs">
-              Select Local Files
-            </Button>
-          </div>
-
-          <Card className="bg-[#12161f]/80 border-white/10">
-            <CardHeader>
-              <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-                <FileCheck className="w-5 h-5 text-emerald-400" />
-                Cryptographically Sealed Evidence Ledger
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="border-b border-white/10 text-slate-400">
-                    <tr>
-                      <th className="pb-3 font-semibold">Artifact Name</th>
-                      <th className="pb-3 font-semibold">Case Origin</th>
-                      <th className="pb-3 font-semibold">File Type</th>
-                      <th className="pb-3 font-semibold">Calculated SHA-256 Hash</th>
-                      <th className="pb-3 font-semibold">Integrity</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5 text-slate-300">
-                    <tr>
-                      <td className="py-3 font-mono">cctv_frame_tamper_02.mp4</td>
-                      <td>CAS-2026-004</td>
-                      <td>Video / H.264</td>
-                      <td className="font-mono text-slate-500 text-[11px]">8f4b23...a9e0</td>
-                      <td><Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">VALID</Badge></td>
-                    </tr>
-                    <tr>
-                      <td className="py-3 font-mono">auth_failure_stream.log</td>
-                      <td>CAS-2026-003</td>
-                      <td>System Log</td>
-                      <td className="font-mono text-slate-500 text-[11px]">3c7e91...d112</td>
-                      <td><Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">VALID</Badge></td>
-                    </tr>
-                    <tr>
-                      <td className="py-3 font-mono">perimeter_raw_packet.pcap</td>
-                      <td>CAS-2026-004</td>
-                      <td>PCAP Network</td>
-                      <td className="font-mono text-slate-500 text-[11px]">e2098b...56cc</td>
-                      <td><Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">VALID</Badge></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* TAB 4: TIMELINE RECONSTRUCTION */}
-        <TabsContent value="timeline" className="space-y-4">
-          <Card className="bg-[#12161f]/80 border-white/10">
-            <CardHeader>
-              <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-                <Clock className="w-5 h-5 text-cyan-400" />
-                Synchronized CCTV & Log Event Timeline
-              </CardTitle>
-              <CardDescription className="text-xs text-slate-400">
-                Visualizing sequence of physical camera events and digital anomalies for CAS-2026-004.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {[
-                { time: "22:14:02", title: "YOLOv8 Detection: Person in Restricted Perimeter", feed: "North Gate Cam 02", level: "HIGH", note: "Subject detected climbing outer fence boundary" },
-                { time: "22:14:38", title: "Security Rule Triggered: Perimeter Zone Intrusion", feed: "Automated Rules Engine", level: "CRITICAL", note: "Sent alert notification #NOTIF-883 to guard console" },
-                { time: "22:15:10", title: "Camera Feed Signal Disrupted / HUD Fallback Engaged", feed: "North Gate Cam 02", level: "CRITICAL", note: "Hardware RTSP connection severed; synthetic radar HUD automatically activated" },
-                { time: "22:16:04", title: "Failed SSH Authentication Burst from 194.26.29.112", feed: "Firewall Node 01", level: "HIGH", note: "14 consecutive invalid password attempts within 30 seconds" },
-                { time: "22:18:22", title: "Incident Case Created & Forensic Snapshot Frozen", feed: "Agent Hawke", level: "INFO", note: "Evidence preserved with SHA-256 hash sealing" }
-              ].map((ev, idx) => (
-                <div key={idx} className="flex items-start gap-4">
-                  <div className="font-mono text-xs text-cyan-400 pt-0.5 w-20 shrink-0 font-bold">
-                    {ev.time}
-                  </div>
-                  <div className="w-3 h-3 rounded-full bg-cyan-400 border-4 border-[#0a0c10] shadow-[0_0_8px_rgba(56,189,248,0.8)] mt-1 shrink-0" />
-                  <div className="flex-1 p-3 rounded-xl bg-[#161a22] border border-white/5 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <h5 className="text-xs md:text-sm font-semibold text-white">{ev.title}</h5>
-                      <Badge className={ev.level === "CRITICAL" ? "bg-red-500/20 text-red-400 border-red-500/30 text-[10px]" : ev.level === "HIGH" ? "bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px]" : "bg-cyan-500/20 text-cyan-400 border-cyan-500/30 text-[10px]"}>
-                        {ev.level}
-                      </Badge>
+                      <span>Updated {c.lastUpdated}</span>
                     </div>
-                    <p className="text-xs text-slate-400">{ev.note}</p>
-                    <span className="text-[11px] font-mono text-slate-500 block">Source: {ev.feed}</span>
                   </div>
+
+                  <Link href={`/dashboard/cases/${c.id}`} className="shrink-0">
+                    <Button size="sm" variant="outline" className="h-7 text-xs px-2.5 border-border">
+                      Open Case
+                    </Button>
+                  </Link>
                 </div>
               ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* TAB 5: MITRE ATT&CK & THREAT IOCS */}
-        <TabsContent value="threats" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            {/* MITRE Matrix */}
-            <Card className="bg-[#12161f]/80 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-amber-400" />
-                  MITRE ATT&CK Technique Mapping
-                </CardTitle>
-                <CardDescription className="text-xs text-slate-400">
-                  Adversary tactics mapped to detected surveillance and network anomalies.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {mitreTactics.map((m, idx) => (
-                  <div key={idx} className="p-3 rounded-lg bg-[#181d28] border border-white/5 flex items-center justify-between">
-                    <div>
-                      <span className="text-xs font-mono text-slate-400 block">{m.tactic}</span>
-                      <strong className="text-xs md:text-sm text-slate-200">{m.technique}</strong>
-                    </div>
-                    <Badge className={m.severity === "CRITICAL" ? "bg-red-500/20 text-red-400 border-red-500/30" : "bg-amber-500/20 text-amber-400 border-amber-500/30"}>
-                      {m.severity}
-                    </Badge>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* IOCs Aggregator */}
-            <Card className="bg-[#12161f]/80 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-                  <Network className="w-5 h-5 text-red-400" />
-                  Live Threat Indicators (IOCs)
-                </CardTitle>
-                <CardDescription className="text-xs text-slate-400">
-                  Suspicious IP reputations & malware hashes queried from AbuseIPDB & VirusTotal.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {sampleIocs.map((ioc, idx) => (
-                  <div key={idx} className="p-3 rounded-lg bg-[#181d28] border border-white/5 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs font-bold text-cyan-300">{ioc.indicator}</span>
-                      <Badge variant="outline" className="text-[10px] border-white/10 text-slate-400">{ioc.type}</Badge>
-                    </div>
-                    <p className="text-xs text-red-400">{ioc.reputation}</p>
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
-                      <span>Linked Case: {ioc.originCase}</span>
-                      <span className="font-mono text-emerald-400">{ioc.status}</span>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-          </div>
-        </TabsContent>
-
-        {/* TAB 6: REPORTS */}
-        <TabsContent value="reports" className="space-y-4">
-          <Card className="bg-[#12161f]/80 border-white/10">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-cyan-400" />
-                  Structured Investigation Reports
-                </CardTitle>
-                <CardDescription className="text-xs text-slate-400">
-                  Comprehensive forensic dossiers with executive summaries, SHA-256 evidence logs, and timeline analysis.
-                </CardDescription>
-              </div>
-              <Button size="sm" className="bg-cyan-600 hover:bg-cyan-500 text-white text-xs">
-                <Plus className="w-3.5 h-3.5 mr-1.5" />
-                Generate New Report
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {[
-                  { id: "REP-2026-088", title: "Comprehensive Forensics Audit - Perimeter Gate 02 Breach", caseId: "CAS-2026-004", date: "29 Sep 2026", status: "FINALIZED", pages: 12 },
-                  { id: "REP-2026-087", title: "Server Vault Unauthorized Keycard Attempt Investigation", caseId: "CAS-2026-003", date: "28 Sep 2026", status: "IN_REVIEW", pages: 8 },
-                  { id: "REP-2026-086", title: "Simulated Long-Rifle vs Umbrella Detection Discrimination Dossier", caseId: "CAS-2026-002", date: "26 Sep 2026", status: "VERIFIED", pages: 16 }
-                ].map((rep) => (
-                  <div key={rep.id} className="p-4 rounded-xl bg-[#161a22] border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-cyan-400">{rep.id}</span>
-                        <Badge variant="outline" className="text-[10px] border-white/10 text-slate-300">{rep.caseId}</Badge>
-                        <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px]">{rep.status}</Badge>
-                      </div>
-                      <h4 className="text-sm font-semibold text-white">{rep.title}</h4>
-                      <p className="text-xs text-slate-400">Generated on {rep.date} &bull; {rep.pages} pages &bull; SHA-256 sealed</p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Button size="sm" variant="outline" className="border-white/10 text-xs text-slate-200 hover:bg-white/10">
-                        <Eye className="w-3.5 h-3.5 mr-1" /> View Report
-                      </Button>
-                      <Button size="sm" className="bg-white/10 hover:bg-white/20 text-white text-xs">
-                        <Download className="w-3.5 h-3.5 mr-1" /> Export PDF
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-      </Tabs>
+      </div>
 
     </div>
   );

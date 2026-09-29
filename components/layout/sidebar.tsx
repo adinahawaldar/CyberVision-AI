@@ -27,42 +27,11 @@ import {
   CollapsibleContent,
   CollapsibleTrigger
 } from '@/components/ui/collapsible';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import CreateCaseDialog from '@/components/cases/create-case-dialog';
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
-  const { toast } = useToast();
-
   const [isCasesOpen, setIsCasesOpen] = useState(true);
-  const [isCreateCaseOpen, setIsCreateCaseOpen] = useState(false);
-  const [caseTitle, setCaseTitle] = useState('');
-  const [casePriority, setCasePriority] = useState('HIGH');
-  const [caseLocation, setCaseLocation] = useState('Main Plaza / North Gate');
-  const [caseCamera, setCaseCamera] = useState('CAMERA 01 - Main Entrance');
-
-  const handleCreateCaseSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!caseTitle.trim()) return;
-
-    toast({
-      title: "Case Created Successfully",
-      description: `Case "${caseTitle}" registered with priority ${casePriority}.`,
-    });
-
-    setIsCreateCaseOpen(false);
-    setCaseTitle('');
-    router.push('/dashboard/forensics?tab=cases');
-  };
 
   const caseSubItems = [
     {
@@ -104,13 +73,16 @@ export default function Sidebar() {
           
           {/* TOP PRIMARY ACTION: + CREATE CASE */}
           <div className="mb-4">
-            <Button
-              onClick={() => setIsCreateCaseOpen(true)}
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:hover:bg-slate-200 dark:text-slate-900 font-semibold text-xs h-9 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-none"
-            >
-              <Plus className="w-4 h-4" />
-              Create Case
-            </Button>
+            <CreateCaseDialog
+              trigger={
+                <Button
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:hover:bg-slate-200 dark:text-slate-900 font-semibold text-xs h-9 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-none"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Case
+                </Button>
+              }
+            />
           </div>
 
           {/* MAIN NAVIGATION */}
@@ -234,95 +206,6 @@ export default function Sidebar() {
 
         </div>
       </aside>
-
-      {/* CREATE CASE MODAL DIALOG */}
-      <Dialog open={isCreateCaseOpen} onOpenChange={setIsCreateCaseOpen}>
-        <DialogContent className="sm:max-w-md bg-background border-border">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-base font-bold text-foreground">
-              <FolderOpen className="w-5 h-5 text-foreground" />
-              Open New Forensic Investigation
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Register a security incident with incident details, priority, and source CCTV coverage.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleCreateCaseSubmit} className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground">Case Title / Incident</label>
-              <Input
-                placeholder="e.g. Unauthorized Perimeter Ingress"
-                value={caseTitle}
-                onChange={(e) => setCaseTitle(e.target.value)}
-                required
-                className="text-xs h-9 bg-muted/40"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground">Priority Level</label>
-                <select
-                  value={casePriority}
-                  onChange={(e) => setCasePriority(e.target.value)}
-                  className="w-full text-xs h-9 rounded-md border border-input bg-background px-3 text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                >
-                  <option value="CRITICAL">Critical</option>
-                  <option value="HIGH">High</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="LOW">Low</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground">Primary CCTV Feed</label>
-                <select
-                  value={caseCamera}
-                  onChange={(e) => setCaseCamera(e.target.value)}
-                  className="w-full text-xs h-9 rounded-md border border-input bg-background px-3 text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                >
-                  <option value="Entrance">Entrance (Webcam)</option>
-                  <option value="Backyard">Backyard</option>
-                  <option value="Lobby">Lobby</option>
-                  <option value="Parking">Parking</option>
-                  <option value="Warehouse">Warehouse</option>
-                  <option value="Office">Office</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground">Location</label>
-              <Input
-                placeholder="e.g. Building A - Sector 3"
-                value={caseLocation}
-                onChange={(e) => setCaseLocation(e.target.value)}
-                className="text-xs h-9 bg-muted/40"
-              />
-            </div>
-
-            <DialogFooter className="pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setIsCreateCaseOpen(false)}
-                className="text-xs"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                size="sm"
-                className="text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
-              >
-                Create Investigation
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

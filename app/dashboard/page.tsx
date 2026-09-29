@@ -159,25 +159,12 @@ export default function DashboardPage() {
       
       {/* TOP HEADER SECTION */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-600" />
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              CCTV Surveillance
-            </h1>
-          </div>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Live video feeds &bull; AI threat detection
-          </p>
-        </div>
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+          CCTV Surveillance
+        </h1>
 
         {/* CONTROLS */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="h-8 px-3 text-xs bg-muted/60 font-medium text-foreground border border-border rounded-md flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span>{cameras.length} Active Feeds</span>
-          </div>
-
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
