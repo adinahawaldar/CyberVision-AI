@@ -2,7 +2,7 @@ import asyncio
 import base64
 import time
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, Query, Body, Response, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Request, HTTPException, Query, Body, Response, WebSocket, WebSocketDisconnect
 from fastapi.responses import StreamingResponse
 from backend.services.camera_manager import camera_manager
 from backend.services.storage import storage

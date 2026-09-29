@@ -1,11 +1,284 @@
 [
   {
+    "id": "alert-33b9edb2",
+    "user_id": "user_3JzyOTmMkifBkyBZjMnJTVlmLnF",
+    "camera_id": "cam-b7f09be2",
+    "type": "success",
+    "title": "worker attendance",
+    "message": "Attendance tracking logged subject at External Webcam.",
+    "read": false,
+    "link": "/dashboard/cameras/live?camera=cam-b7f09be2",
+    "timestamp": "2026-09-29T17:51:17"
+  },
+  {
+    "id": "alert-1e37415d",
+    "user_id": "user_3JzyOTmMkifBkyBZjMnJTVlmLnF",
+    "camera_id": "cam-b7f09be2",
+    "type": "success",
+    "title": "worker attendance",
+    "message": "Attendance tracking logged subject at External Webcam.",
+    "read": false,
+    "link": "/dashboard/cameras/live?camera=cam-b7f09be2",
+    "timestamp": "2026-09-29T17:50:32"
+  },
+  {
+    "id": "alert-b592c97c",
+    "user_id": "user_3JzyOTmMkifBkyBZjMnJTVlmLnF",
+    "camera_id": "cam-b7f09be2",
+    "type": "success",
+    "title": "worker attendance",
+    "message": "Attendance tracking logged subject at External Webcam.",
+    "read": false,
+    "link": "/dashboard/cameras/live?camera=cam-b7f09be2",
+    "timestamp": "2026-09-29T17:49:47"
+  },
+  {
+    "id": "alert-336da9f7",
+    "user_id": "user_3JzyOTmMkifBkyBZjMnJTVlmLnF",
+    "camera_id": "cam-b7f09be2",
+    "type": "success",
+    "title": "worker attendance",
+    "message": "Attendance tracking logged subject at External Webcam.",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-b7f09be2",
+    "timestamp": "2026-09-29T17:49:01"
+  },
+  {
+    "id": "alert-e1155857",
+    "user_id": "user_3JzyOTmMkifBkyBZjMnJTVlmLnF",
+    "camera_id": "cam-b7f09be2",
+    "type": "success",
+    "title": "worker attendance",
+    "message": "Attendance tracking logged subject at External Webcam.",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-b7f09be2",
+    "timestamp": "2026-09-29T17:48:16"
+  },
+  {
+    "id": "alert-0586922d",
+    "user_id": "user_3JzyOTmMkifBkyBZjMnJTVlmLnF",
+    "camera_id": "cam-b7f09be2",
+    "type": "success",
+    "title": "worker attendance",
+    "message": "Attendance tracking logged subject at External Webcam.",
+    "read": false,
+    "link": "/dashboard/cameras/live?camera=cam-b7f09be2",
+    "timestamp": "2026-09-29T17:47:31"
+  },
+  {
+    "id": "alert-5a4c7cd6",
+    "title": "worker attendance",
+    "message": "Attendance tracking logged subject at External Webcam.",
+    "type": "success",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-b7f09be2",
+    "timestamp": "2026-09-29T11:57:54.384178Z"
+  },
+  {
+    "id": "alert-1afa2c56",
+    "title": "worker attendance",
+    "message": "Attendance tracking logged subject at External Webcam.",
+    "type": "success",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-b7f09be2",
+    "timestamp": "2026-09-29T11:57:09.352325Z"
+  },
+  {
+    "id": "alert-f452bc54",
+    "title": "worker attendance",
+    "message": "Attendance tracking logged subject at External Webcam.",
+    "type": "success",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-b7f09be2",
+    "timestamp": "2026-09-29T11:42:54.415135Z"
+  },
+  {
+    "id": "alert-57256ed5",
+    "title": "worker attendance",
+    "message": "Attendance tracking logged subject at External Webcam.",
+    "type": "success",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-b7f09be2",
+    "timestamp": "2026-09-29T11:42:02.801201Z"
+  },
+  {
+    "id": "alert-2ffbea4b",
+    "title": "worker attendance",
+    "message": "Attendance tracking logged subject at External Webcam.",
+    "type": "success",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-b7f09be2",
+    "timestamp": "2026-09-29T11:41:17.608683Z"
+  },
+  {
+    "id": "alert-55f2cf3e",
+    "title": "worker attendance",
+    "message": "Attendance tracking logged subject at External Webcam.",
+    "type": "success",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-b7f09be2",
+    "timestamp": "2026-09-29T11:40:32.190265Z"
+  },
+  {
+    "id": "alert-6a7d615f",
+    "title": "Test Worker Alert",
+    "message": "Attendance tracking logged subject at External Webcam.",
+    "type": "success",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-b7f09be2",
+    "timestamp": "2026-09-29T11:39:17.541870Z"
+  },
+  {
+    "id": "alert-0c3028ff",
+    "title": "Test Worker Alert",
+    "message": "Attendance tracking logged subject at External Webcam.",
+    "type": "success",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-b7f09be2",
+    "timestamp": "2026-09-29T11:38:31.954886Z"
+  },
+  {
+    "id": "alert-0e6f028c",
+    "title": "Test Worker Alert",
+    "message": "Attendance tracking logged subject at External Webcam.",
+    "type": "success",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-b7f09be2",
+    "timestamp": "2026-09-29T11:37:46.474235Z"
+  },
+  {
+    "id": "alert-f5b145c9",
+    "title": "Authorized Personnel Verification",
+    "message": "Personnel verified at Camera 01 - Main Entrance (Webcam) under rule 'Authorized Personnel Verification'.",
+    "type": "info",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-webcam-0",
+    "timestamp": "2026-09-29T11:19:24.257002Z"
+  },
+  {
+    "id": "alert-d7becf95",
+    "title": "Authorized Personnel Verification",
+    "message": "Personnel verified at Camera 01 - Main Entrance (Webcam) under rule 'Authorized Personnel Verification'.",
+    "type": "info",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-webcam-0",
+    "timestamp": "2026-09-29T11:16:43.100493Z"
+  },
+  {
+    "id": "alert-3a336cc3",
+    "title": "Authorized Personnel Verification",
+    "message": "Personnel verified at Camera 01 - Main Entrance (Webcam) under rule 'Authorized Personnel Verification'.",
+    "type": "info",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-webcam-0",
+    "timestamp": "2026-09-29T11:15:57.533546Z"
+  },
+  {
+    "id": "alert-da9bbe71",
+    "title": "Authorized Personnel Verification",
+    "message": "Personnel verified at Camera 01 - Main Entrance (Webcam) under rule 'Authorized Personnel Verification'.",
+    "type": "info",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-webcam-0",
+    "timestamp": "2026-09-29T11:15:11.914438Z"
+  },
+  {
+    "id": "alert-d0f6f740",
+    "title": "Authorized Personnel Verification",
+    "message": "Personnel verified at Camera 01 - Main Entrance (Webcam) under rule 'Authorized Personnel Verification'.",
+    "type": "info",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-webcam-0",
+    "timestamp": "2026-09-29T11:14:26.675133Z"
+  },
+  {
+    "id": "alert-40719d56",
+    "title": "Authorized Personnel Verification",
+    "message": "Personnel verified at Camera 01 - Main Entrance (Webcam) under rule 'Authorized Personnel Verification'.",
+    "type": "info",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-webcam-0",
+    "timestamp": "2026-09-29T11:13:41.429521Z"
+  },
+  {
+    "id": "alert-75744fb0",
+    "title": "Authorized Personnel Verification",
+    "message": "Personnel verified at Camera 01 - Main Entrance (Webcam) under rule 'Authorized Personnel Verification'.",
+    "type": "info",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-webcam-0",
+    "timestamp": "2026-09-29T11:12:56.182719Z"
+  },
+  {
+    "id": "alert-f0783605",
+    "title": "Authorized Personnel Verification",
+    "message": "Personnel verified at Camera 01 - Main Entrance (Webcam) under rule 'Authorized Personnel Verification'.",
+    "type": "info",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-webcam-0",
+    "timestamp": "2026-09-29T11:12:10.676907Z"
+  },
+  {
+    "id": "alert-8bbddf4b",
+    "title": "Authorized Personnel Verification",
+    "message": "Personnel verified at Camera 01 - Main Entrance (Webcam) under rule 'Authorized Personnel Verification'.",
+    "type": "info",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-webcam-0",
+    "timestamp": "2026-09-29T11:11:25.297984Z"
+  },
+  {
+    "id": "alert-8c76d29f",
+    "title": "Authorized Personnel Verification",
+    "message": "Personnel verified at Camera 01 - Main Entrance (Webcam) under rule 'Authorized Personnel Verification'.",
+    "type": "info",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-webcam-0",
+    "timestamp": "2026-09-29T11:10:40.123988Z"
+  },
+  {
+    "id": "alert-e4aa4c8e",
+    "title": "Authorized Personnel Verification",
+    "message": "Personnel verified at Camera 01 - Main Entrance (Webcam) under rule 'Authorized Personnel Verification'.",
+    "type": "info",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-webcam-0",
+    "timestamp": "2026-09-29T11:09:54.811068Z"
+  },
+  {
+    "id": "alert-4ac08015",
+    "title": "Authorized Personnel Verification",
+    "message": "Personnel verified at Camera 01 - Main Entrance (Webcam) under rule 'Authorized Personnel Verification'.",
+    "type": "info",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-webcam-0",
+    "timestamp": "2026-09-29T11:09:09.393099Z"
+  },
+  {
+    "id": "alert-fa8ff7cf",
+    "title": "Authorized Personnel Verification",
+    "message": "Personnel verified at Camera 01 - Main Entrance (Webcam) under rule 'Authorized Personnel Verification'.",
+    "type": "info",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-webcam-0",
+    "timestamp": "2026-09-29T11:08:23.773394Z"
+  },
+  {
+    "id": "alert-8f5b5d12",
+    "title": "Authorized Personnel Verification",
+    "message": "Personnel verified at Camera 01 - Main Entrance (Webcam) under rule 'Authorized Personnel Verification'.",
+    "type": "info",
+    "read": true,
+    "link": "/dashboard/cameras/live?camera=cam-webcam-0",
+    "timestamp": "2026-09-29T11:07:38.682408Z"
+  },
+  {
     "id": "notif-breach-01",
     "title": "Perimeter Patrol Alert",
     "message": "Unscheduled movement detected at Perimeter North by YOLOv8 tracking.",
     "timestamp": "2026-09-20T14:45:00Z",
     "type": "warning",
-    "read": false,
+    "read": true,
     "link": "/dashboard/cameras/live?camera=cam-synthetic-2"
   },
   {

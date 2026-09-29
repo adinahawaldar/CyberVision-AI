@@ -78,5 +78,30 @@
         "enabled": true
       }
     ]
+  },
+  {
+    "id": "cam-b7f09be2",
+    "user_id": "user_3JzyOTmMkifBkyBZjMnJTVlmLnF",
+    "name": "External Webcam",
+    "rtsp_url": "1",
+    "location": "Custom Location",
+    "status": "online",
+    "stream_url": "http://localhost:8000/api/v1/streaming/live/cam-b7f09be2",
+    "hls_url": "http://localhost:8000/api/v1/streaming/live/cam-b7f09be2",
+    "thumbnail_url": "/api/v1/streaming/snapshot/cam-b7f09be2",
+    "model": "Network / USB Camera",
+    "is_streaming": true,
+    "filters": [
+      {
+        "filter_id": "filter-1",
+        "filter_name": "Attendance",
+        "enabled": true
+      },
+      {
+        "filter_id": "filter-2",
+        "filter_name": "VehicleDetection",
+        "enabled": true
+      }
+    ]
   }
 ]

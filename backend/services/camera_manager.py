@@ -4,28 +4,37 @@ import uuid
 import threading
 import numpy as np
 from typing import Dict, Optional, Tuple, Generator, List, Any
+
 from backend.services.detector import detector
 from backend.services.storage import storage
+
 
 class CameraCapture:
     """
     Manages frame acquisition from a single camera source (webcam device 0, rtsp, or synthetic).
     Runs in a background thread to prevent blocking client requests.
     """
-    def __init__(self, camera_id: str, source: str, name: str = ""):
+    def __init__(
+        self,
+        camera_id: str,
+        source: str,
+        name: str = "",
+        user_id: Optional[str] = None,
+    ):
         self.camera_id = camera_id
         self.source = source
         self.name = name or camera_id
+        self.user_id = user_id
+
         self.running = False
         self.thread: Optional[threading.Thread] = None
         self.lock = threading.Lock()
-        
+
         self.latest_raw_frame: Optional[np.ndarray] = None
         self.latest_processed_frame: Optional[np.ndarray] = None
         self.latest_detections: List[Dict[str, Any]] = []
         self.latest_timestamp = time.time()
         self.last_alert_times: Dict[str, float] = {}
-        
         self.fps = 0.0
         self.is_connected = False
         self.with_detection = True
@@ -36,7 +45,10 @@ class CameraCapture:
         if self.running:
             return
         self.running = True
-        self.thread = threading.Thread(target=self._capture_loop, daemon=True)
+        self.thread = threading.Thread(
+            target=self._capture_loop,
+            daemon=True
+        )
         self.thread.start()
         print(f"[CameraCapture] Started stream thread for {self.camera_id} ({self.source})")
 
@@ -49,8 +61,8 @@ class CameraCapture:
         print(f"[CameraCapture] Stopped stream thread for {self.camera_id}")
 
     def _open_capture(self) -> Optional[cv2.VideoCapture]:
-        # Check if source is an integer (e.g. "0", "1") for webcams
         source_clean = str(self.source).strip()
+        # Webcam source: "0", "1", etc.
         if source_clean.isdigit():
             cap_idx = int(source_clean)
             # Use DirectShow on Windows for fast webcam init
@@ -63,11 +75,11 @@ class CameraCapture:
                 return cap
             return None
 
-        # Check if synthetic source
+        # Synthetic source
         if source_clean.startswith("synth:"):
-            return None  # Will use synthetic generator
+            return None
 
-        # RTSP or HTTP or local file
+        # RTSP / HTTP / local file
         cap = cv2.VideoCapture(source_clean)
         if cap.isOpened():
             return cap
@@ -77,7 +89,7 @@ class CameraCapture:
         """Generates a sleek high-tech CyberVision synthetic test feed with moving elements."""
         w, h = 1280, 720
         frame = np.zeros((h, w, 3), dtype=np.uint8)
-        
+
         # Grid lines
         for y in range(0, h, 60):
             cv2.line(frame, (0, y), (w, y), (20, 26, 34), 1)
@@ -89,7 +101,7 @@ class CameraCapture:
         angle = (time.time() * 90) % 360
         cv2.circle(frame, (cx, cy), 140, (0, 180, 255), 1)
         cv2.circle(frame, (cx, cy), 80, (0, 100, 200), 1)
-        
+
         # Sweeping radar line
         rad = np.radians(angle)
         rx = int(cx + 140 * np.cos(rad))
@@ -114,7 +126,6 @@ class CameraCapture:
     def _capture_loop(self):
         cap = self._open_capture()
         self.is_connected = (cap is not None and cap.isOpened())
-        
         last_frame_time = time.time()
         fps_smoothing = 0.9
 
@@ -146,7 +157,7 @@ class CameraCapture:
                     current_fps = 1.0 / dt
                     self.fps = (self.fps * fps_smoothing) + (current_fps * (1.0 - fps_smoothing))
 
-                # Apply YOLO detection if enabled
+                # YOLO detection
                 if self.with_detection:
                     annotated, detections = detector.detect(raw_frame)
                 else:
@@ -220,14 +231,22 @@ class CameraCapture:
 
                 if triggered:
                     self.last_alert_times[rule_id] = curr_time
-                    storage.save_notification({
+                    notification = {
                         "id": f"alert-{uuid.uuid4().hex[:8]}",
+                        "user_id": self.user_id,
+                        "camera_id": self.camera_id,
+                        "type": notif_type,
                         "title": title,
                         "message": message,
-                        "type": notif_type,
                         "read": False,
-                        "link": f"/dashboard/cameras/live?camera={self.camera_id}"
-                    })
+                        "link": f"/dashboard/cameras/live?camera={self.camera_id}",
+                        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S")
+                    }
+                    try:
+                        saved = storage.save_notification(notification, user_id=self.user_id)
+                        print(f"[Notifications] Saved alert for user {self.user_id}: {title} (ID: {saved.get('id')})")
+                    except Exception as e:
+                        print(f"[Notifications] Failed to save alert: {e}")
                     print(f"[RulesEngine] Triggered alert for {self.camera_id}: {title} - {message}")
         except Exception as e:
             print(f"[RulesEngine] Error evaluating rules for {self.camera_id}: {e}")
@@ -240,10 +259,11 @@ class CameraCapture:
             target = frame.copy()
 
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
-        ret, jpeg = cv2.imencode('.jpg', target, encode_param)
+        ret, jpeg = cv2.imencode(".jpg", target, encode_param)
         if ret:
             return jpeg.tobytes()
         return None
+
 
 class CameraManager:
     def __init__(self):
@@ -258,20 +278,45 @@ class CameraManager:
             cam_id = cam.get("id")
             source = cam.get("rtsp_url", "0")
             name = cam.get("name", cam_id)
-            self.add_or_update_camera(cam_id, source, name, start=True)
+            user_id = cam.get("user_id")
+            self.add_or_update_camera(
+                camera_id=cam_id,
+                source=source,
+                name=name,
+                user_id=user_id,
+                start=True
+            )
 
-    def add_or_update_camera(self, camera_id: str, source: str, name: str = "", start: bool = True):
+    def add_or_update_camera(
+        self,
+        camera_id: str,
+        source: str,
+        name: str = "",
+        user_id: Optional[str] = None,
+        start: bool = True
+    ):
         with self.lock:
             if camera_id in self.captures:
-                # Update existing
                 old_cap = self.captures[camera_id]
                 if old_cap.source != source:
                     old_cap.stop()
-                    self.captures[camera_id] = CameraCapture(camera_id, source, name)
+                    self.captures[camera_id] = CameraCapture(
+                        camera_id,
+                        source,
+                        name,
+                        user_id
+                    )
                     if start:
                         self.captures[camera_id].start()
+                else:
+                    old_cap.user_id = user_id
             else:
-                cap = CameraCapture(camera_id, source, name)
+                cap = CameraCapture(
+                    camera_id,
+                    source,
+                    name,
+                    user_id
+                )
                 self.captures[camera_id] = cap
                 if start:
                     cap.start()
@@ -287,13 +332,13 @@ class CameraManager:
             if camera_id in self.captures:
                 self.captures[camera_id].start(with_detection=with_detection)
                 return True
-            # Check if camera exists in storage
             cam_data = storage.get_camera_by_id(camera_id)
             if cam_data:
                 self.add_or_update_camera(
-                    camera_id,
-                    cam_data.get("rtsp_url", "0"),
-                    cam_data.get("name", camera_id),
+                    camera_id=camera_id,
+                    source=cam_data.get("rtsp_url", "0"),
+                    name=cam_data.get("name", camera_id),
+                    user_id=cam_data.get("user_id"),
                     start=True
                 )
                 self.captures[camera_id].with_detection = with_detection
@@ -325,11 +370,14 @@ class CameraManager:
                     })
             return active
 
-    def generate_mjpeg_stream(self, camera_id: str, processed: bool = True) -> Generator[bytes, None, None]:
+    def generate_mjpeg_stream(
+        self,
+        camera_id: str,
+        processed: bool = True
+    ) -> Generator[bytes, None, None]:
         """Yields multipart MJPEG frames for real-time browser streaming."""
         cap = self.get_capture(camera_id)
         if not cap:
-            # Try to start it
             self.start_stream(camera_id)
             cap = self.get_capture(camera_id)
 
@@ -340,11 +388,15 @@ class CameraManager:
             jpeg_bytes = cap.get_latest_jpeg(processed=processed, quality=75)
             if jpeg_bytes is not None:
                 yield (
-                    b'--frame\r\n'
-                    b'Content-Type: image/jpeg\r\n'
-                    b'Content-Length: ' + str(len(jpeg_bytes)).encode() + b'\r\n\r\n' +
-                    jpeg_bytes + b'\r\n'
+                    b"--frame\r\n"
+                    b"Content-Type: image/jpeg\r\n"
+                    b"Content-Length: "
+                    + str(len(jpeg_bytes)).encode()
+                    + b"\r\n\r\n"
+                    + jpeg_bytes
+                    + b"\r\n"
                 )
-            time.sleep(0.035)  # ~28 FPS limit for smooth bandwidth
+            time.sleep(0.035)
+
 
 camera_manager = CameraManager()

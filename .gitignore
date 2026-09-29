@@ -7,10 +7,13 @@
 
 # Environment & Secrets (Never commit credentials to public repo)
 .env
+.env*
+.env.local
 .env*.local
 .env.development
 .env.test
 .env.production
+.env.example
 *.pem
 *.key
 *.cert

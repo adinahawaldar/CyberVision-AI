@@ -50,5 +50,31 @@
       "Sat",
       "Sun"
     ]
+  },
+  {
+    "name": "worker attendance",
+    "event": "attendance",
+    "condition": {
+      "type": "attendance",
+      "data": {
+        "role": "Worker",
+        "entryTimeStart": "17:00",
+        "entryTimeEnd": "18:00",
+        "exitTime": "18:01",
+        "intervalCheck": true
+      }
+    },
+    "enabled": true,
+    "days": [
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday"
+    ],
+    "cameraId": "cam-b7f09be2",
+    "cameraName": "External Webcam",
+    "user_id": "user_3JzyOTmMkifBkyBZjMnJTVlmLnF",
+    "id": "rule-39769071"
   }
 ]
