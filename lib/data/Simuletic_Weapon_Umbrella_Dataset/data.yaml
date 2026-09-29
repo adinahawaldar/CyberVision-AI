@@ -1,0 +1,12 @@
+# Simuletic CCTV Weapon Dataset: Rifle vs Umbrella. Supports YOLOv8 and YOLO11.
+
+path: .          
+train: images    
+val: images       
+
+
+nc: 1            
+names:
+  0: person
+  1: weapon
+  2: umbrella     
