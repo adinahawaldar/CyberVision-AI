@@ -120,11 +120,13 @@ export default function Hero() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="font-bold tracking-tight text-3xl sm:text-5xl md:text-6xl text-white max-w-3xl mx-auto leading-tight"
+          className="font-bold tracking-tight text-3xl sm:text-5xl md:text-6xl max-w-4xl mx-auto leading-tight"
         >
-          Turn CCTV footage into{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff3538] to-rose-400">
-            actionable evidence.
+          <span className="block text-white">
+            Forensic Investigation
+          </span>
+          <span className="block text-[#ff3538] mt-1 sm:mt-2">
+            Turn Evidence Into Answers.
           </span>
         </motion.h1>
 
@@ -134,9 +136,9 @@ export default function Hero() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-slate-400 text-xs sm:text-sm md:text-base max-w-xl mx-auto mt-4 leading-relaxed font-normal"
+          className="text-slate-300 text-xs sm:text-sm md:text-base max-w-2xl mx-auto mt-4 leading-relaxed font-normal"
         >
-          CyberVision AI detects suspicious activity, generates real-time alerts, and automatically builds structured incident reports from CCTV footage &amp; videos.
+          Investigate incidents using CCTV footage, digital evidence, intelligent timelines, and AI-assisted analysis all in one secure workspace.
         </motion.p>
 
         {/* COMPACT ACTION BUTTONS */}
@@ -147,25 +149,25 @@ export default function Hero() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto"
         >
-          {/* VIEW PLATFORM BUTTON */}
+          {/* START AN INVESTIGATION BUTTON */}
           <Button
             asChild
             className="w-full sm:w-auto h-10 sm:h-11 px-6 rounded-full bg-white hover:bg-slate-100 text-black font-semibold text-xs sm:text-sm transition-all shadow-sm hover:shadow flex items-center justify-center space-x-2 cursor-pointer group"
           >
-            <Link href="/sign-in">
-              <span>Get Started</span>
+            <Link href={isAuthenticated ? "/dashboard/forensics" : "/sign-in"}>
+              <span>Start an Investigation</span>
               <ArrowRight className="w-3.5 h-3.5 text-black group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </Button>
 
-          {/* SEE HOW IT WORKS BUTTON */}
+          {/* EXPLORE PLATFORM BUTTON */}
           <Button
             onClick={handleSeeHowItWorks}
             variant="outline"
             className="w-full sm:w-auto h-10 sm:h-11 px-6 rounded-full bg-white/5 hover:bg-white/10 text-slate-200 hover:text-white border-white/15 hover:border-white/30 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 cursor-pointer backdrop-blur-sm group"
           >
-            <Play className="w-3 h-3 text-[#ff3538] fill-[#ff3538] group-hover:scale-110 transition-transform" />
-            <span>See How It Works</span>
+            <Play className="w-3 h-3 text-cyan-400 fill-cyan-400 group-hover:scale-110 transition-transform" />
+            <span>Explore Platform</span>
           </Button>
         </motion.div>
 
