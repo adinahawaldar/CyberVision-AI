@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "backend": "python backend/run_backend.py",
+    "forensics:backend": "node backend/forensics/server.js",
+    "forensics:frontend": "npm run dev --prefix frontend/forensics",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

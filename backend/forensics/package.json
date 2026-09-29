@@ -1,0 +1,32 @@
+{
+  "name": "forensics-server",
+  "version": "1.2.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "worker:evidence": "node workers/evidenceWorker.js",
+    "dev:worker:evidence": "node --watch workers/evidenceWorker.js",
+    "test:parser-phase": "node scripts/parserPhaseSmokeTest.js"
+  },
+  "dependencies": {
+    "@simplewebauthn/server": "^13.2.3",
+    "bcryptjs": "^2.4.3",
+    "bullmq": "^5.77.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-rate-limit": "^7.4.1",
+    "express-validator": "^7.2.0",
+    "helmet": "^8.0.0",
+    "ioredis": "^5.10.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.8.3",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "pdfkit": "^0.15.1",
+    "uuid": "^11.0.3"
+  }
+}

@@ -1,0 +1,13 @@
+# ForensicAI — robots.txt
+# https://forensicai-app.vercel.app
+
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /legal
+
+# Sitemap
+Sitemap: https://forensicai-app.vercel.app/sitemap.xml
+
+# Block API endpoints from indexing
+Disallow: /api/

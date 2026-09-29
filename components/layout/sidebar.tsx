@@ -14,6 +14,7 @@ import {
   ChevronDown,
   ChevronRight,
   Shield,
+  ShieldAlert,
   BrainCircuit,
   FlaskConical, // Added for Test icon
   Bell, // Added for Notifications icon
@@ -55,6 +56,11 @@ export default function Sidebar() {
       title: 'Dashboard',
       href: '/dashboard',
       icon: <LayoutDashboard className="w-5 h-5" />,
+    },
+    {
+      title: 'Digital Forensics',
+      href: '/dashboard/forensics',
+      icon: <ShieldAlert className="w-5 h-5 text-cyan-400" />,
     },
     {
       title: 'Notifications', // New Notifications menu item
