@@ -42,11 +42,26 @@ venv.bak/
 # User Uploads & Media Files (Privacy & Repository Size)
 backend/data/uploads/*
 !backend/data/uploads/.gitkeep
+backend/forensics/uploads/*
+!backend/forensics/uploads/.gitkeep
 *.mp4
 *.avi
 *.mov
 *.mkv
 temp_*.mp4
+
+# Temporary & Generated Files
+tmp/
+*.tmp
+evidence-store/
+backend/forensics/tmp/
+pdf generation/*.pdf
+*.pdf
+
+# Cache & Local Data
+.cache/
+*.sqlite
+*.sqlite3
 
 # Next.js & Build Outputs
 /.next/

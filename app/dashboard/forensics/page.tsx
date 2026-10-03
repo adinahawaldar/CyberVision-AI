@@ -24,7 +24,8 @@ import {
   Eye,
   Download,
   Camera,
-  FileVideo
+  FileVideo,
+  Loader2
 } from "lucide-react";
 import CreateCaseDialog from "@/components/cases/create-case-dialog";
 import { useCases } from "@/lib/services/caseService";
@@ -52,7 +53,36 @@ export default function ForensicsDashboardPage() {
   const searchParams = useSearchParams();
   const currentTab = searchParams.get("tab") || "overview";
   const [isMounted, setIsMounted] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const { cases } = useCases();
+
+  const handleDownloadPdf = async (repId: string) => {
+    try {
+      setDownloadingId(repId);
+      const res = await fetch(`/api/reports/download-pdf?id=${encodeURIComponent(repId)}`);
+      if (!res.ok) {
+        throw new Error(`Failed to generate PDF (${res.status})`);
+      }
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${repId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      console.error("PDF download error:", err);
+      alert("Failed to download PDF: " + (err?.message || "Unknown error"));
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const handleViewPdf = (repId: string) => {
+    window.open(`/api/reports/download-pdf?id=${encodeURIComponent(repId)}`, "_blank");
+  };
 
   useEffect(() => {
     setIsMounted(true);
@@ -256,11 +286,30 @@ export default function ForensicsDashboardPage() {
                   <p className="text-[11px] text-muted-foreground">{rep.date} &bull; {rep.pages} pages</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <Button size="sm" variant="outline" className="h-7 text-xs px-2.5 border-border">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs px-2.5 border-border text-foreground hover:bg-muted"
+                    onClick={() => handleViewPdf(rep.id)}
+                  >
                     <Eye className="w-3 h-3 mr-1" /> View
                   </Button>
-                  <Button size="sm" variant="outline" className="h-7 text-xs px-2.5 border-border">
-                    <Download className="w-3 h-3 mr-1" /> PDF
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs px-2.5 border-border text-foreground hover:bg-muted"
+                    disabled={downloadingId === rep.id}
+                    onClick={() => handleDownloadPdf(rep.id)}
+                  >
+                    {downloadingId === rep.id ? (
+                      <>
+                        <Loader2 className="w-3 h-3 mr-1 animate-spin" /> Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-3 h-3 mr-1" /> PDF
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
