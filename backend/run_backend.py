@@ -18,16 +18,20 @@ import uvicorn
 from backend.config import HOST, PORT
 
 def main():
+    port = int(os.environ.get("PORT", PORT))
+    host = os.environ.get("HOST", HOST)
+
     print("=" * 70)
     print("      [*] CYBERVISION-AI  //  AI SURVEILLANCE & CAMERA BACKEND       ")
     print("=" * 70)
-    print(f"[*] Serving on:   http://{HOST}:{PORT}")
-    print(f"[*] API Docs:     http://localhost:{PORT}/docs")
-    print(f"[*] Live Cameras: http://localhost:{PORT}/api/v1/cameras")
-    print(f"[*] Streaming:    http://localhost:{PORT}/api/v1/streaming/live/<camera_id>")
+    print(f"[*] Serving on:   http://{host}:{port}")
+    print(f"[*] API Docs:     http://localhost:{port}/docs")
+    print(f"[*] Live Cameras: http://localhost:{port}/api/v1/cameras")
+    print(f"[*] Streaming:    http://localhost:{port}/api/v1/streaming/live/<camera_id>")
     print("=" * 70)
 
-    uvicorn.run("backend.main:app", host=HOST, port=PORT, reload=False)
+    app_target = "backend.main:app" if Path("backend/main.py").exists() else "main:app"
+    uvicorn.run(app_target, host=host, port=port, reload=False)
 
 if __name__ == "__main__":
     main()

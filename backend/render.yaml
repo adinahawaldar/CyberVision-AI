@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: cybervision-ai-backend
+    env: python
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: HOST
+        value: 0.0.0.0
+      - key: YOLO_MODEL
+        value: yolov8n.pt
+      - key: DETECTION_CONFIDENCE
+        value: 0.45
+      - key: DETECTION_FPS_LIMIT
+        value: 25

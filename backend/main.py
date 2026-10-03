@@ -1,5 +1,25 @@
 import os
+import sys
+from pathlib import Path
 from contextlib import asynccontextmanager
+
+# Add parent directory and backend directory to sys.path for universal import resolution
+_backend_dir = Path(__file__).resolve().parent
+_parent_dir = _backend_dir.parent
+for _d in (str(_parent_dir), str(_backend_dir)):
+    if _d not in sys.path:
+        sys.path.insert(0, _d)
+
+if "backend" not in sys.modules:
+    import types
+    try:
+        import backend
+    except ImportError:
+        backend_pkg = types.ModuleType("backend")
+        backend_pkg.__path__ = [str(_backend_dir)]
+        backend_pkg.__file__ = str(_backend_dir / "__init__.py")
+        sys.modules["backend"] = backend_pkg
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles

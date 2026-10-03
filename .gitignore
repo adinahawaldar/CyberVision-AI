@@ -1,8 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # Dependencies
-/node_modules
-/.pnp
+node_modules/
+.pnp
 .pnp.js
 
 # Environment & Secrets (Never commit credentials to public repo)
@@ -13,7 +13,7 @@
 .env.development
 .env.test
 .env.production
-.env.example
+!.env.example
 *.pem
 *.key
 *.cert
@@ -64,10 +64,12 @@ pdf generation/*.pdf
 *.sqlite3
 
 # Next.js & Build Outputs
-/.next/
-/out/
-/build/
-/dist/
+.next/
+out/
+build/
+dist/
+frontend/pdf generation/*.pdf
+pdf generation/*.pdf
 
 # Testing & Coverage
 /coverage/

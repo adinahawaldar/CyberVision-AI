@@ -156,44 +156,30 @@ CyberVision-AI is organized as a decoupled, high-performance monorepo:
 
 ```
 CyberVision-AI/
-├── app/                                 # Next.js 13.5 App Router (Frontend)
-│   ├── dashboard/                       # Authenticated Security Dashboard
-│   │   ├── page.tsx                     # Main Dashboard Overview
-│   │   ├── forensics/                   # Integrated Digital Forensics Dashboard
-│   │   ├── cameras/                     # Live Multi-Camera Feeds & Management
-│   │   ├── notifications/               # Alert Dispatch & History Center
-│   │   ├── health/                      # Node System Health Monitoring
-│   │   ├── ai-assistant/                # Natural Language Video Copilot
-│   │   └── settings/                    # Security Rules & General Preferences
-│   ├── landing/                         # Product Showcase & Architecture Visualizer
-│   ├── sign-in/ & sign-up/              # Clerk Authentication Pages
-│   └── layout.tsx                       # Root Layout & Theme Providers
+├── frontend/                            # Next.js 14 Surveillance & Forensic Suite (Port 3000)
+│   ├── app/                             # Next.js App Router (Dashboard, Cameras, Forensics)
+│   ├── components/                      # Radix UI + Tailwind Component Library
+│   ├── lib/                             # Services, State Stores, Types & PDF Engine
+│   ├── public/                          # Media Assets & Static Resources
+│   ├── pdf generation/                  # Incident Report HTML Template & Puppeteer Runner
+│   ├── package.json                     # Frontend NPM Dependencies & Scripts
+│   ├── next.config.js                   # Next.js Server Configurations
+│   └── tailwind.config.ts               # Design System Styling Configuration
 │
-├── backend/                             # AI & Forensic Backend Systems
+├── backend/                             # AI Surveillance & Forensic Backend Systems (Port 8000)
 │   ├── api/                             # FastAPI Surveillance REST Endpoints
 │   ├── data/                            # Persistent JSON Storage (Cameras, Rules, Logs)
 │   ├── services/                        # Camera Streaming & YOLO Detection Services
-│   ├── forensics/                       # ForensicAI Engine (Express + MongoDB + Evidence Vault)
-│   ├── main.py                          # FastAPI Application Factory
-│   └── run_backend.py                   # Uvicorn Server Runner (Port 8000)
+│   ├── forensics/                       # ForensicAI Engine (Express + Evidence Store, Port 5000)
+│   ├── main.py                          # FastAPI Application Factory (Render Web Service)
+│   ├── run_backend.py                   # Uvicorn Server Runner (Dynamic $PORT Resolution)
+│   ├── render.yaml                      # Render Infrastructure Blueprint
+│   ├── DEPLOY_RENDER.md                 # Step-by-Step Render Deployment Guide
+│   └── requirements.txt                 # Python Dependencies
 │
-├── frontend/                            # Standalone Modular Client Engines
-│   └── forensics/                       # Forensic Investigation React Studio (Port 5173)
-│
-├── components/                          # Reusable UI Component Library
-│   ├── landing/                         # Animated Landing Page & Pipeline Flow
-│   ├── layout/                          # AppShell, Header & Sidebar Navigation
-│   ├── auth/                            # Authentication Guards & Modals
-│   └── ui/                              # Radix UI + Tailwind Design System
-│
-├── lib/
-│   ├── data/
-│   │   └── Simuletic_Weapon_Umbrella_Dataset/  # Synthetic YOLO Dataset (Images + Labels)
-│   └── services/                        # Frontend API Clients & Services
-│
-├── run_backend.bat                      # Windows One-Click Backend Launcher
-├── package.json                         # Node.js Dependencies & NPM Scripts
-└── requirements.txt                     # Python Dependencies (backend/)
+├── package.json                         # Workspace Convenience Runner Scripts
+├── README.md                            # Comprehensive Developer Guide
+└── PROJECT_OVERVIEW.md                  # Complete System Architecture Dossier
 ```
 
 ---
