@@ -1,5 +1,31 @@
 [
   {
+    "id": "rule-weapon-threat-01",
+    "name": "Weapon & Sharp Object Detection",
+    "cameraId": null,
+    "cameraName": "All Cameras",
+    "event": "weapon_detection",
+    "condition": {
+      "type": "weapon",
+      "data": {
+        "targetClasses": ["knife", "weapon", "scissors"],
+        "minConfidence": 0.35
+      }
+    },
+    "action": "trigger_alarm",
+    "enabled": true,
+    "schedule": "24/7",
+    "days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun"
+    ]
+  },
+  {
     "id": "rule-auth-entry-01",
     "name": "Authorized Personnel Verification",
     "cameraId": "cam-webcam-0",

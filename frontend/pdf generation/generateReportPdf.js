@@ -43,6 +43,19 @@ export function buildHtml(templatePath, stringData = {}) {
   // Replace any leftover {{...}} with 'Not Available'
   html = html.replace(/\{\{[A-Z0-9_]+\}\}/g, 'Not Available');
 
+  // Convert logo/logo.png to base64 data URI if found
+  try {
+    const logoCandidates = [
+      path.resolve(path.dirname(templatePath), 'logo/logo.png'),
+      path.resolve(path.dirname(templatePath), '../public/images/logo/logo.png'),
+    ];
+    const foundLogo = logoCandidates.find(p => fs.existsSync(p));
+    if (foundLogo) {
+      const b64 = fs.readFileSync(foundLogo).toString('base64');
+      html = html.split('logo/logo.png').join(`data:image/png;base64,${b64}`);
+    }
+  } catch (e) {}
+
   return html;
 }
 

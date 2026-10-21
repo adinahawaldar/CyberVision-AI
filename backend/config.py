@@ -8,9 +8,25 @@ UPLOADS_DIR = DATA_DIR / "uploads"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
+# Auto-load environment variables from backend/.env or frontend/.env.local
+for ep in [BASE_DIR / ".env", BASE_DIR.parent / "frontend" / ".env.local"]:
+    if ep.exists():
+        try:
+            with open(ep, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        k, v = k.strip(), v.strip()
+                        if k and k not in os.environ:
+                            os.environ[k] = v
+        except Exception:
+            pass
+
 # Server Configuration
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", 8000))
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # CORS Origins
 CORS_ORIGINS = [
@@ -22,8 +38,9 @@ CORS_ORIGINS = [
 ]
 
 # AI Detection Configuration
-YOLO_MODEL_NAME = os.getenv("YOLO_MODEL", "yolov8n.pt")
-DETECTION_CONFIDENCE = float(os.getenv("DETECTION_CONFIDENCE", 0.45))
+_default_model = "yolov8s.pt" if (BASE_DIR / "yolov8s.pt").exists() or (BASE_DIR.parent / "yolov8s.pt").exists() else "yolov8n.pt"
+YOLO_MODEL_NAME = os.getenv("YOLO_MODEL", _default_model)
+DETECTION_CONFIDENCE = float(os.getenv("DETECTION_CONFIDENCE", 0.40))
 DETECTION_FPS_LIMIT = int(os.getenv("DETECTION_FPS_LIMIT", 25))
 
 # Camera storage paths

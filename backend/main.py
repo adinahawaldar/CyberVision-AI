@@ -89,3 +89,14 @@ async def root():
         "health_endpoint": "/api/v1/health",
         "roles_endpoint": "/api/v1/users/roles"
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    from backend.config import HOST, PORT
+    port = int(os.environ.get("PORT", PORT))
+    host = os.environ.get("HOST", HOST)
+    print("=" * 60)
+    print(f"[*] Starting CyberVision-AI Backend on http://{host}:{port}")
+    print("=" * 60)
+    uvicorn.run(app, host=host, port=port)
+

@@ -20,6 +20,9 @@ CLASS_COLORS = {
     "laptop": (200, 255, 0),
     "dog": (180, 100, 255),       # Purple
     "cat": (180, 100, 255),
+    "knife": (0, 0, 255),         # High Alert Vivid Red
+    "weapon": (0, 0, 255),        # High Alert Vivid Red
+    "scissors": (0, 69, 255),     # Orange Red
 }
 DEFAULT_COLOR = (0, 220, 255)
 
@@ -88,61 +91,107 @@ class YOLODetector:
 
             detected_counts = {}
 
+            # Track detected persons for proximity/handheld analysis
+            person_boxes = []
+            raw_boxes = []
+
             for result in results:
                 boxes = result.boxes
                 if boxes is None:
                     continue
-
                 for box in boxes:
                     cls_id = int(box.cls[0].item())
-                    cls_name = self.model.names.get(cls_id, f"class_{cls_id}")
+                    cls_name = str(self.model.names.get(cls_id, f"class_{cls_id}")).lower()
                     conf = float(box.conf[0].item())
                     xyxy = box.xyxy[0].cpu().numpy()
                     x1, y1, x2, y2 = (xyxy / scale).astype(int)
+                    if cls_name == "person":
+                        person_boxes.append([x1, y1, x2, y2])
+                    raw_boxes.append((cls_name, conf, x1, y1, x2, y2))
 
-                    detected_counts[cls_name] = detected_counts.get(cls_name, 0) + 1
+            for cls_name, conf, x1, y1, x2, y2 in raw_boxes:
+                box_w = abs(x2 - x1)
+                box_h = abs(y2 - y1)
+                ar = max(box_w, box_h) / max(1, min(box_w, box_h))
+                box_area = box_w * box_h
+                frame_area = max(1, w * h)
+                area_ratio = box_area / frame_area
 
-                    detection_item = {
-                        "class": cls_name,
-                        "confidence": round(conf, 3),
-                        "box": [int(x1), int(y1), int(x2), int(y2)]
-                    }
-                    detections.append(detection_item)
+                # Check if handheld / near any person
+                is_near_person = any(
+                    (px1 - 40 <= x1 <= px2 + 40 or px1 - 40 <= x2 <= px2 + 40) and
+                    (py1 <= y1 <= py2 + 20 or py1 <= y2 <= py2 + 20)
+                    for px1, py1, px2, py2 in person_boxes
+                )
 
-                    # Determine color
-                    color = CLASS_COLORS.get(cls_name, DEFAULT_COLOR)
+                # Aspect ratio typical of modern mobile phones (approx 1.2 to 3.8)
+                is_phone_dimensions = (1.15 <= ar <= 4.0) and (area_ratio < 0.18)
 
-                    # Draw stylish corner bounding box
-                    box_len = min(24, (x2 - x1) // 3, (y2 - y1) // 3)
-                    # Semi-transparent box border
-                    cv2.rectangle(annotated, (x1, y1), (x2, y2), color, 1)
+                # --- DISAMBIGUATION & SUPPRESSION ---
+                if cls_name == "remote":
+                    # In security CCTV and webcam contexts, handheld remotes are cell phones
+                    cls_name = "cell phone"
+                elif cls_name == "vase":
+                    # Major false positive: phone in hand / reflection flagged as vase
+                    if is_phone_dimensions or is_near_person:
+                        cls_name = "cell phone"
+                    elif conf < 0.65:
+                        # Suppress false positive background vase clutter in surveillance
+                        continue
+                elif cls_name in ["book", "toaster", "hair drier"] and (is_phone_dimensions and is_near_person):
+                    cls_name = "cell phone"
 
-                    # Highlighted corners
-                    thickness = 3
-                    cv2.line(annotated, (x1, y1), (x1 + box_len, y1), color, thickness)
-                    cv2.line(annotated, (x1, y1), (x1, y1 + box_len), color, thickness)
-                    cv2.line(annotated, (x2, y1), (x2 - box_len, y1), color, thickness)
-                    cv2.line(annotated, (x2, y1), (x2, y1 + box_len), color, thickness)
-                    cv2.line(annotated, (x1, y2), (x1 + box_len, y2), color, thickness)
-                    cv2.line(annotated, (x1, y2), (x1, y2 - box_len), color, thickness)
-                    cv2.line(annotated, (x2, y2), (x2 - box_len, y2), color, thickness)
-                    cv2.line(annotated, (x2, y2), (x2, y2 - box_len), color, thickness)
+                detected_counts[cls_name] = detected_counts.get(cls_name, 0) + 1
 
-                    # Label badge
-                    label_text = f"{cls_name.upper()} {int(conf * 100)}%"
-                    (tw, th), _ = cv2.getTextSize(label_text, cv2.FONT_HERSHEY_SIMPLEX, 0.45, 1)
-                    badge_y1 = max(38, y1 - th - 8)
-                    cv2.rectangle(annotated, (x1, badge_y1), (x1 + tw + 10, badge_y1 + th + 8), color, -1)
-                    cv2.putText(
-                        annotated,
-                        label_text,
-                        (x1 + 5, badge_y1 + th + 4),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.45,
-                        (10, 10, 10),
-                        1,
-                        cv2.LINE_AA
-                    )
+                detection_item = {
+                    "class": cls_name,
+                    "confidence": round(conf, 3),
+                    "box": [int(x1), int(y1), int(x2), int(y2)]
+                }
+                detections.append(detection_item)
+
+                # Determine color
+                color = CLASS_COLORS.get(cls_name, DEFAULT_COLOR)
+
+                # Draw stylish corner bounding box
+                box_len = min(24, max(4, (x2 - x1) // 3), max(4, (y2 - y1) // 3))
+                # Semi-transparent box border
+                cv2.rectangle(annotated, (x1, y1), (x2, y2), color, 1)
+
+                # Highlighted corners
+                thickness = 3
+                cv2.line(annotated, (x1, y1), (x1 + box_len, y1), color, thickness)
+                cv2.line(annotated, (x1, y1), (x1, y1 + box_len), color, thickness)
+                cv2.line(annotated, (x2, y1), (x2 - box_len, y1), color, thickness)
+                cv2.line(annotated, (x2, y1), (x2, y1 + box_len), color, thickness)
+                cv2.line(annotated, (x1, y2), (x1 + box_len, y2), color, thickness)
+                cv2.line(annotated, (x1, y2), (x1, y2 - box_len), color, thickness)
+                cv2.line(annotated, (x2, y2), (x2 - box_len, y2), color, thickness)
+                cv2.line(annotated, (x2, y2), (x2, y2 - box_len), color, thickness)
+
+                # User-friendly label badge
+                if cls_name == "cell phone":
+                    display_label = "MOBILE PHONE"
+                elif cls_name in ["knife", "weapon"]:
+                    display_label = f"THREAT: {cls_name.upper()}"
+                elif cls_name == "scissors":
+                    display_label = "SHARP OBJECT: SCISSORS"
+                else:
+                    display_label = cls_name.upper()
+                label_text = f"{display_label} {int(conf * 100)}%"
+                (tw, th), _ = cv2.getTextSize(label_text, cv2.FONT_HERSHEY_SIMPLEX, 0.45, 1)
+                badge_y1 = max(38, y1 - th - 8)
+                cv2.rectangle(annotated, (x1, badge_y1), (x1 + tw + 10, badge_y1 + th + 8), color, -1)
+                cv2.putText(
+                    annotated,
+                    label_text,
+                    (x1 + 5, badge_y1 + th + 4),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.45,
+                    (10, 10, 10),
+                    1,
+                    cv2.LINE_AA
+                )
 
             # Draw detection summary pills on top-right
             summary_str = " | ".join([f"{k.upper()}: {v}" for k, v in detected_counts.items()])

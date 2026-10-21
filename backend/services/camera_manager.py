@@ -1,6 +1,7 @@
 import cv2
 import time
 import uuid
+import base64
 import threading
 import numpy as np
 from typing import Dict, Optional, Tuple, Generator, List, Any
@@ -9,10 +10,117 @@ from backend.services.detector import detector
 from backend.services.storage import storage
 
 
+class SharedSourceCapture:
+    """
+    Manages a single hardware or network video capture source (e.g. webcam "0", RTSP URL).
+    Ensures that only one cv2.VideoCapture is open per physical device index or stream,
+    preventing hardware lockouts, DirectShow driver conflicts, and black frame loops.
+    """
+    def __init__(self, source: str):
+        self.source = str(source).strip()
+        self.lock = threading.RLock()
+        self.running = False
+        self.thread: Optional[threading.Thread] = None
+        self.latest_frame: Optional[np.ndarray] = None
+        self.is_connected = False
+        self.subscribers = 0
+        self.last_frame_time = 0.0
+
+    def start(self):
+        with self.lock:
+            self.subscribers += 1
+            if not self.running:
+                self.running = True
+                self.thread = threading.Thread(target=self._capture_worker, daemon=True)
+                self.thread.start()
+                print(f"[SharedSourceCapture] Started capture thread for source: {self.source}")
+
+    def stop(self):
+        with self.lock:
+            self.subscribers = max(0, self.subscribers - 1)
+            if self.subscribers == 0 and self.running:
+                self.running = False
+                print(f"[SharedSourceCapture] Stopping capture thread for source: {self.source}")
+
+    def get_latest_frame(self) -> Optional[np.ndarray]:
+        with self.lock:
+            if self.latest_frame is not None:
+                return self.latest_frame.copy()
+            return None
+
+    def _open_video_capture(self) -> Optional[cv2.VideoCapture]:
+        source_clean = self.source
+        if source_clean.isdigit():
+            idx = int(source_clean)
+            # Try DirectShow on Windows, then fallback to MSMF/default
+            cap = cv2.VideoCapture(idx, cv2.CAP_DSHOW)
+            if not cap.isOpened():
+                cap = cv2.VideoCapture(idx)
+            if cap.isOpened():
+                # Allow camera to configure resolution
+                cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+                # Drain black warm-up frames so auto-exposure settles
+                for _ in range(8):
+                    ret, f = cap.read()
+                    if ret and f is not None and f.mean() > 5.0:
+                        with self.lock:
+                            self.latest_frame = f
+                            self.is_connected = True
+                        break
+                    time.sleep(0.04)
+                return cap
+            return None
+
+        if source_clean.startswith("synth:"):
+            return None
+
+        cap = cv2.VideoCapture(source_clean)
+        if cap.isOpened():
+            return cap
+        return None
+
+    def _capture_worker(self):
+        cap = self._open_video_capture()
+        self.is_connected = (cap is not None and cap.isOpened())
+        consecutive_drops = 0
+
+        while self.running:
+            if cap and cap.isOpened():
+                ret, frame = cap.read()
+                if ret and frame is not None:
+                    consecutive_drops = 0
+                    self.is_connected = True
+                    self.last_frame_time = time.time()
+                    with self.lock:
+                        self.latest_frame = frame
+                    time.sleep(0.02)  # Cap hardware polling to ~50 fps
+                else:
+                    consecutive_drops += 1
+                    time.sleep(0.05)
+                    if consecutive_drops >= 20:
+                        print(f"[SharedSourceCapture] Re-opening source {self.source} after repeated drops...")
+                        cap.release()
+                        time.sleep(0.5)
+                        cap = self._open_video_capture()
+                        self.is_connected = (cap is not None and cap.isOpened())
+                        consecutive_drops = 0
+            else:
+                # Source not open, retry after pause
+                time.sleep(1.0)
+                if self.running:
+                    cap = self._open_video_capture()
+                    self.is_connected = (cap is not None and cap.isOpened())
+
+        if cap and cap.isOpened():
+            cap.release()
+        print(f"[SharedSourceCapture] Stopped capture thread for source: {self.source}")
+
+
 class CameraCapture:
     """
-    Manages frame acquisition from a single camera source (webcam device 0, rtsp, or synthetic).
-    Runs in a background thread to prevent blocking client requests.
+    Manages frame acquisition, YOLO inference, and rule evaluation for a logical camera.
+    Subscribes to a shared hardware source reader when using physical webcam or RTSP.
     """
     def __init__(
         self,
@@ -20,21 +128,26 @@ class CameraCapture:
         source: str,
         name: str = "",
         user_id: Optional[str] = None,
+        source_capture: Optional[SharedSourceCapture] = None,
     ):
         self.camera_id = camera_id
         self.source = source
         self.name = name or camera_id
         self.user_id = user_id
+        self.source_capture = source_capture
 
         self.running = False
         self.thread: Optional[threading.Thread] = None
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
 
         self.latest_raw_frame: Optional[np.ndarray] = None
         self.latest_processed_frame: Optional[np.ndarray] = None
         self.latest_detections: List[Dict[str, Any]] = []
         self.latest_timestamp = time.time()
         self.last_alert_times: Dict[str, float] = {}
+        self.last_incident_snapshot: Optional[str] = None
+        self.last_incident_detections: List[str] = []
+        self.last_incident_time: Optional[str] = None
         self.fps = 0.0
         self.is_connected = False
         self.with_detection = True
@@ -45,6 +158,8 @@ class CameraCapture:
         if self.running:
             return
         self.running = True
+        if self.source_capture:
+            self.source_capture.start()
         self.thread = threading.Thread(
             target=self._capture_loop,
             daemon=True
@@ -54,36 +169,13 @@ class CameraCapture:
 
     def stop(self):
         self.running = False
+        if self.source_capture:
+            self.source_capture.stop()
         if self.thread and self.thread.is_alive():
             self.thread.join(timeout=1.5)
         self.thread = None
         self.is_connected = False
         print(f"[CameraCapture] Stopped stream thread for {self.camera_id}")
-
-    def _open_capture(self) -> Optional[cv2.VideoCapture]:
-        source_clean = str(self.source).strip()
-        # Webcam source: "0", "1", etc.
-        if source_clean.isdigit():
-            cap_idx = int(source_clean)
-            # Use DirectShow on Windows for fast webcam init
-            cap = cv2.VideoCapture(cap_idx, cv2.CAP_DSHOW)
-            if not cap.isOpened():
-                cap = cv2.VideoCapture(cap_idx)
-            if cap.isOpened():
-                cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-                return cap
-            return None
-
-        # Synthetic source
-        if source_clean.startswith("synth:"):
-            return None
-
-        # RTSP / HTTP / local file
-        cap = cv2.VideoCapture(source_clean)
-        if cap.isOpened():
-            return cap
-        return None
 
     def _generate_synthetic_frame(self) -> np.ndarray:
         """Generates a sleek high-tech CyberVision synthetic test feed with moving elements."""
@@ -124,29 +216,22 @@ class CameraCapture:
         return frame
 
     def _capture_loop(self):
-        cap = self._open_capture()
-        self.is_connected = (cap is not None and cap.isOpened())
         last_frame_time = time.time()
         fps_smoothing = 0.9
 
         while self.running:
             raw_frame = None
-            if cap and cap.isOpened():
-                ret, frame = cap.read()
-                if ret and frame is not None:
-                    raw_frame = frame
-                    self.is_connected = True
-                else:
-                    # Retry opening stream if dropped
-                    time.sleep(0.5)
-                    cap.release()
-                    cap = self._open_capture()
-                    self.is_connected = (cap is not None and cap.isOpened())
-            else:
+            if self.source_capture:
+                raw_frame = self.source_capture.get_latest_frame()
+                self.is_connected = self.source_capture.is_connected
+
+            if raw_frame is None:
                 # If synthetic or camera not accessible, generate synthetic frame
                 raw_frame = self._generate_synthetic_frame()
                 self.is_connected = True
                 time.sleep(0.04)  # ~25 FPS
+            else:
+                time.sleep(0.03)  # ~33 FPS target for inference
 
             if raw_frame is not None:
                 self.frame_counter += 1
@@ -187,9 +272,6 @@ class CameraCapture:
                 if detections:
                     self._evaluate_rules(detections)
 
-        if cap and cap.isOpened():
-            cap.release()
-
     def _evaluate_rules(self, detections: List[Dict[str, Any]]):
         try:
             curr_time = time.time()
@@ -216,7 +298,12 @@ class CameraCapture:
                 message = ""
                 notif_type = "info"
 
-                if event == "authorized_entry" and "person" in detected_classes:
+                if event == "weapon_detection" and any(c in detected_classes for c in ["knife", "weapon", "scissors"]):
+                    triggered = True
+                    matched_weapons = [c.upper() for c in detected_classes if c in ["knife", "weapon", "scissors"]]
+                    message = f"CRITICAL WEAPON ALERT: Detected {', '.join(matched_weapons)} at {self.name}!"
+                    notif_type = "alert"
+                elif event == "authorized_entry" and "person" in detected_classes:
                     triggered = True
                     message = f"Personnel verified at {self.name} under rule '{title}'."
                     notif_type = "info"
@@ -229,18 +316,45 @@ class CameraCapture:
                     message = f"Vehicle identified in zone monitored by {self.name}."
                     notif_type = "warning" if action == "trigger_alarm" else "alert"
 
+                # Direct auto-detection fallback for high-risk weapons even without explicit user rule
+                if not triggered and any(c in detected_classes for c in ["knife", "weapon", "scissors"]):
+                    weapon_cooldown_key = "auto_weapon_alert"
+                    if curr_time - self.last_alert_times.get(weapon_cooldown_key, 0) >= 30.0:
+                        self.last_alert_times[weapon_cooldown_key] = curr_time
+                        triggered = True
+                        matched_weapons = [c.upper() for c in detected_classes if c in ["knife", "weapon", "scissors"]]
+                        title = f"SECURITY ALERT: Weapon Detected ({', '.join(matched_weapons)})"
+                        message = f"Tactical optical threat detected: {', '.join(matched_weapons)} identified at {self.name} with real-time YOLOv8 bounding box."
+                        notif_type = "alert"
+
                 if triggered:
                     self.last_alert_times[rule_id] = curr_time
+                    # Encode latest frame snapshot as base64 for document evidence
+                    snapshot_b64 = None
+                    try:
+                        jpeg_data = self.get_latest_jpeg(processed=True, quality=85)
+                        if jpeg_data:
+                            snapshot_b64 = "data:image/jpeg;base64," + base64.b64encode(jpeg_data).decode("utf-8")
+                            with self.lock:
+                                self.last_incident_snapshot = snapshot_b64
+                                self.last_incident_detections = list(detected_classes)
+                                self.last_incident_time = time.strftime("%Y-%m-%dT%H:%M:%S")
+                    except Exception:
+                        pass
+
                     notification = {
                         "id": f"alert-{uuid.uuid4().hex[:8]}",
                         "user_id": self.user_id,
                         "camera_id": self.camera_id,
+                        "camera_name": self.name,
                         "type": notif_type,
                         "title": title,
                         "message": message,
                         "read": False,
                         "link": f"/dashboard/cameras/live?camera={self.camera_id}",
-                        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S")
+                        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                        "detected_classes": list(detected_classes),
+                        "snapshot": snapshot_b64
                     }
                     try:
                         saved = storage.save_notification(notification, user_id=self.user_id)
@@ -268,7 +382,17 @@ class CameraCapture:
 class CameraManager:
     def __init__(self):
         self.captures: Dict[str, CameraCapture] = {}
-        self.lock = threading.Lock()
+        self.source_pools: Dict[str, SharedSourceCapture] = {}
+        self.lock = threading.RLock()
+
+    def get_or_create_source_capture(self, source: str) -> Optional[SharedSourceCapture]:
+        source_clean = str(source).strip()
+        if source_clean.startswith("synth:"):
+            return None
+        with self.lock:
+            if source_clean not in self.source_pools:
+                self.source_pools[source_clean] = SharedSourceCapture(source_clean)
+            return self.source_pools[source_clean]
 
     def initialize_stored_cameras(self):
         """Initializes and starts streaming captures for all cameras in storage."""
@@ -296,6 +420,7 @@ class CameraManager:
         start: bool = True
     ):
         with self.lock:
+            source_capture = self.get_or_create_source_capture(source)
             if camera_id in self.captures:
                 old_cap = self.captures[camera_id]
                 if old_cap.source != source:
@@ -304,7 +429,8 @@ class CameraManager:
                         camera_id,
                         source,
                         name,
-                        user_id
+                        user_id,
+                        source_capture=source_capture
                     )
                     if start:
                         self.captures[camera_id].start()
@@ -315,7 +441,8 @@ class CameraManager:
                     camera_id,
                     source,
                     name,
-                    user_id
+                    user_id,
+                    source_capture=source_capture
                 )
                 self.captures[camera_id] = cap
                 if start:

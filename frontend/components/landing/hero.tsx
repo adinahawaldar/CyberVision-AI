@@ -40,15 +40,15 @@ export default function Hero() {
         <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#ff3538]/15 rounded-full blur-[150px]" />
       </div>
 
-      {/* Curved Dark Silhouette Overlay in Center Background */}
+      {/* Curved Dark Silhouette Overlay in Center Background - Blended into BG */}
       <motion.div
         initial={{ opacity: 0 }}
-        whileInView={{ opacity: 0.95 }}
+        whileInView={{ opacity: 0.85 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="absolute inset-0 pointer-events-none z-0 flex justify-center"
+        className="absolute inset-0 pointer-events-none z-0 flex justify-center overflow-hidden [mask-image:radial-gradient(ellipse_80%_70%_at_50%_50%,black_25%,transparent_95%)]"
       >
-        <div className="w-full max-w-7xl h-full relative">
+        <div className="w-full max-w-7xl h-full relative filter blur-[45px] sm:blur-[65px]">
           <svg
             className="w-full h-full text-[#181a20]"
             viewBox="0 0 1000 1000"

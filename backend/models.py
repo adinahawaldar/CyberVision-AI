@@ -82,7 +82,9 @@ class UserProfile(BaseModel):
 
 # Contextual AI Assistant Models
 class QueryRequest(BaseModel):
-    camera_id: str
+    camera_id: Optional[str] = None
+    case_id: Optional[str] = None
+    case_data: Optional[Dict[str, Any]] = None
     query: str
 
 class QueryResponse(BaseModel):

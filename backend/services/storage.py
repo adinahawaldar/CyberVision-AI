@@ -84,6 +84,24 @@ class StorageManager:
         if not RULES_FILE.exists() or len(load_json(RULES_FILE, [])) == 0:
             default_rules = [
                 {
+                    "id": "rule-weapon-threat-01",
+                    "name": "Weapon & Sharp Object Detection",
+                    "cameraId": None,
+                    "cameraName": "All Cameras",
+                    "event": "weapon_detection",
+                    "condition": {
+                        "type": "weapon",
+                        "data": {
+                            "targetClasses": ["knife", "weapon", "scissors"],
+                            "minConfidence": 0.35
+                        }
+                    },
+                    "action": "trigger_alarm",
+                    "enabled": True,
+                    "schedule": "24/7",
+                    "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+                },
+                {
                     "id": "rule-auth-entry-01",
                     "name": "Authorized Personnel Verification",
                     "cameraId": "cam-webcam-0",

@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Shield, Menu, X } from "lucide-react";
+import Image from "next/image";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/providers/auth-provider";
 
@@ -26,15 +27,20 @@ export default function Navbar() {
       {/* FLOATING CAPSULE NAVBAR CONTAINER */}
       <div className="relative bg-[#1e1e20] border border-white/10 rounded-full p-1.5 shadow-2xl backdrop-blur-xl flex items-center justify-between">
         
-        {/* LEFT: WHITE CIRCULAR BRAND LOGO BADGE */}
-        <Link href="/" className="flex items-center group shrink-0">
-          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-200">
-            <Shield className="w-5 h-5 text-black stroke-[2.2]" />
-          </div>
+        {/* LEFT: BRAND LOGO */}
+        <Link href="/" className="flex items-center pl-3 group shrink-0">
+          <Image
+            src="/images/logo/logo.png"
+            alt="CyberVision AI"
+            width={160}
+            height={50}
+            className="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-105 duration-200"
+            priority
+          />
         </Link>
 
         {/* CENTER: DESKTOP NAVIGATION LINKS */}
-        <nav className="hidden md:flex items-center space-x-6 sm:space-x-8 text-sm font-medium text-slate-300 px-4">
+        <nav className="hidden md:flex items-center space-x-6 sm:space-x-8 text-[15px] sm:text-base font-medium text-slate-200 px-4">
           <a href="#features" className="hover:text-white transition-colors">
             Services
           </a>
@@ -50,7 +56,7 @@ export default function Navbar() {
         <div className="hidden md:flex items-center shrink-0">
           <Link
             href={isAuthenticated ? "/dashboard" : "/sign-in"}
-            className="h-10 px-6 rounded-full bg-white hover:bg-slate-100 text-black font-semibold text-xs sm:text-sm transition-all shadow-sm flex items-center justify-center cursor-pointer"
+            className="h-10 px-6 rounded-full bg-white hover:bg-slate-100 text-black font-semibold text-sm sm:text-base transition-all shadow-sm flex items-center justify-center cursor-pointer"
           >
             Dashboard
           </Link>
@@ -70,7 +76,7 @@ export default function Navbar() {
       {/* MOBILE MENU DRAWER */}
       {mobileMenuOpen && (
         <div className="md:hidden mt-3 bg-[#1e1e20]/95 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 space-y-4 shadow-2xl">
-          <nav className="flex flex-col space-y-3 text-sm font-medium text-slate-300">
+          <nav className="flex flex-col space-y-3 text-base font-medium text-slate-200">
             <a
               href="#features"
               onClick={() => setMobileMenuOpen(false)}
@@ -98,7 +104,7 @@ export default function Navbar() {
             <Link
               href={isAuthenticated ? "/dashboard" : "/sign-in"}
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full rounded-full bg-white hover:bg-slate-100 text-black font-semibold text-sm py-2.5 shadow-md border-0 transition-colors flex items-center justify-center cursor-pointer"
+              className="w-full rounded-full bg-white hover:bg-slate-100 text-black font-semibold text-base py-2.5 shadow-md border-0 transition-colors flex items-center justify-center cursor-pointer"
             >
               Dashboard
             </Link>

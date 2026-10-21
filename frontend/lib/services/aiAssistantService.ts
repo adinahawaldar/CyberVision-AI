@@ -4,7 +4,9 @@
 
 // Types for AI Assistant
 export interface QueryRequest {
-  camera_id: string;
+  camera_id?: string;
+  case_id?: string;
+  case_data?: any;
   query: string;
 }
 
@@ -14,10 +16,11 @@ export interface QueryResponse {
   response?: string; // The detailed text response from AI
   error?: string | null; // Error message if success is false
   camera_id?: string;
-  camera_name?: string; // New field from backend example
-  timestamp?: string; // Backend sends string timestamp
-  model?: string; // New field from backend example
-  image_base64?: string; // Assuming this might still be part of the response
+  camera_name?: string;
+  case_id?: string;
+  timestamp?: string;
+  model?: string;
+  image_base64?: string;
 }
 
 // Backend API base URL
@@ -28,8 +31,32 @@ const API_BASE_URL = 'http://localhost:8000';
  * POST /api/v1/contextual/query
  */
 export const submitQuery = async (request: QueryRequest): Promise<QueryResponse> => {
+  // First attempt: Python FastAPI vision backend with YOLO + OpenAI
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+
     const response = await fetch(`${API_BASE_URL}/api/v1/contextual/query`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (response.ok) {
+      const responseData = await response.json();
+      return responseData as QueryResponse;
+    }
+  } catch (error) {
+    console.warn('Backend server unreachable, falling back to Next.js AI Assistant route...');
+  }
+
+  // Fallback: Next.js OpenAI Assistant Route
+  try {
+    const fallbackRes = await fetch('/api/ai-assistant/query', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -37,22 +64,14 @@ export const submitQuery = async (request: QueryRequest): Promise<QueryResponse>
       body: JSON.stringify(request),
     });
 
-    // Even if response.ok is true, the backend might send { success: false, error: "..." }
-    // so we parse the JSON first.
-    const responseData = await response.json();
-
-    if (!response.ok) {
-      // If response status is not ok, throw an error using the error message from responseData if available
-      throw new Error(responseData.error || `Error: ${response.status} ${response.statusText}`);
+    const fallbackData = await fallbackRes.json();
+    if (!fallbackRes.ok) {
+      throw new Error(fallbackData.error || `HTTP ${fallbackRes.status}`);
     }
-
-    return responseData as QueryResponse;
-  } catch (error) {
-    console.error('Failed to submit query:', error);
-    // Re-throw the error to be caught by the calling function in the component
-    // If it's a network error or JSON parsing error, error.message will be used.
-    // If it's an error thrown from !response.ok, that message will be used.
-    throw error;
+    return fallbackData as QueryResponse;
+  } catch (fallbackError: any) {
+    console.error('Failed to submit query through fallback route:', fallbackError);
+    throw fallbackError;
   }
 };
 

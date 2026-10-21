@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/providers/auth-provider';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/layout/mode-toggle';
-import { Shield, Bell, X, Menu, LogOut, Settings as SettingsIcon, Search } from 'lucide-react';
+import { Bell, X, Menu, LogOut, Settings as SettingsIcon, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
@@ -96,23 +96,13 @@ export default function Header() {
               </SheetTrigger>
               <SheetContent side="left" className="pr-0 sm:max-w-xs w-[300px]">
                 <SheetHeader className="mb-4">
-                  <SheetTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-red-500" />
-                    FORENSIGHT
+                  <SheetTitle className="text-base font-semibold">
+                    Navigation
                   </SheetTitle>
                 </SheetHeader>
               </SheetContent>
             </Sheet>
           </div>
-          
-          <Link href="/dashboard" className="flex items-center gap-2.5 mr-6 group">
-            <div className="w-8 h-8 rounded-lg bg-red-600/10 border border-red-500/30 flex items-center justify-center text-red-600 dark:text-red-400 group-hover:bg-red-600/20 transition-colors">
-              <Shield className="h-4 w-4" />
-            </div>
-            <span className="text-lg font-black tracking-wider text-foreground font-mono">
-              FORENSIGHT
-            </span>
-          </Link>
         </div>
 
         {/* Search Bar in center */}

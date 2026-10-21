@@ -167,10 +167,12 @@ export default function AddCameraDialog({ onCameraAdded, trigger }: AddCameraDia
                 <FormItem>
                   <FormLabel>Camera Source / RTSP URL</FormLabel>
                   <FormControl>
-                    <Input placeholder="0 (for Webcam) or rtsp://192.168.1.100:554/live" {...field} />
+                    <Input placeholder="rtsp://admin:password@192.168.1.50:554/stream1 or 0 (Webcam)" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Enter 0 for local/integrated webcam, or rtsp:// / http:// stream URL
+                  <FormDescription className="text-xs space-y-1">
+                    <span><strong>Home IP Cameras:</strong> <code className="text-[11px] bg-muted px-1 py-0.5 rounded">rtsp://user:password@&lt;IP&gt;:554/stream1</code> (e.g., Tapo, CP Plus, Hikvision)</span>
+                    <br />
+                    <span><strong>Local Testing:</strong> Enter <code className="text-[11px] bg-muted px-1 py-0.5 rounded">0</code> for integrated webcam, or <code className="text-[11px] bg-muted px-1 py-0.5 rounded">http://&lt;IP&gt;:8080/video</code> for phone IP Webcam.</span>
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

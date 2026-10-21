@@ -28,7 +28,7 @@ import {
   Loader2
 } from "lucide-react";
 import CreateCaseDialog from "@/components/cases/create-case-dialog";
-import { useCases } from "@/lib/services/caseService";
+import { useCases, getAllReports, BASE_REPORTS, ReportListItem } from "@/lib/services/caseService";
 
 // 7-day incident activity data
 const activityTrendData = [
@@ -54,7 +54,24 @@ export default function ForensicsDashboardPage() {
   const currentTab = searchParams.get("tab") || "overview";
   const [isMounted, setIsMounted] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [reportsList, setReportsList] = useState<ReportListItem[]>([]);
   const { cases } = useCases();
+
+  useEffect(() => {
+    setIsMounted(true);
+    setReportsList(getAllReports());
+
+    const handleReportsUpdate = () => {
+      setReportsList(getAllReports());
+    };
+
+    window.addEventListener("cybervision_cases_updated", handleReportsUpdate);
+    window.addEventListener("storage", handleReportsUpdate);
+    return () => {
+      window.removeEventListener("cybervision_cases_updated", handleReportsUpdate);
+      window.removeEventListener("storage", handleReportsUpdate);
+    };
+  }, []);
 
   const handleDownloadPdf = async (repId: string) => {
     try {
@@ -81,12 +98,8 @@ export default function ForensicsDashboardPage() {
   };
 
   const handleViewPdf = (repId: string) => {
-    window.open(`/api/reports/download-pdf?id=${encodeURIComponent(repId)}`, "_blank");
+    window.open(`/api/reports/download-pdf?id=${encodeURIComponent(repId)}&view=true`, "_blank");
   };
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   // Compute dynamic metrics from active cases
   const totalCases = cases.length;
@@ -155,26 +168,26 @@ export default function ForensicsDashboardPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   <tr className="hover:bg-muted/20">
-                    <td className="px-3.5 py-2.5 font-mono text-foreground">cctv_frame_tamper_02.mp4</td>
-                    <td className="px-3.5 py-2.5 text-muted-foreground">CAS-2026-004</td>
-                    <td className="px-3.5 py-2.5 text-muted-foreground">Video / H.264</td>
+                    <td className="px-3.5 py-2.5 font-mono text-foreground">cctv_perimeter_breach_cam01.mp4</td>
+                    <td className="px-3.5 py-2.5 text-muted-foreground">CAS-2026-001</td>
+                    <td className="px-3.5 py-2.5 text-muted-foreground">Video / 1080p Full HD</td>
                     <td className="px-3.5 py-2.5 font-mono text-[11px] text-muted-foreground">8f4b23...a9e0</td>
                     <td className="px-3.5 py-2.5">
                       <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">Verified</span>
                     </td>
                   </tr>
                   <tr className="hover:bg-muted/20">
-                    <td className="px-3.5 py-2.5 font-mono text-foreground">auth_failure_stream.log</td>
-                    <td className="px-3.5 py-2.5 text-muted-foreground">CAS-2026-003</td>
-                    <td className="px-3.5 py-2.5 text-muted-foreground">System Log</td>
+                    <td className="px-3.5 py-2.5 font-mono text-foreground">access_controller_audit.log</td>
+                    <td className="px-3.5 py-2.5 text-muted-foreground">CAS-2026-001</td>
+                    <td className="px-3.5 py-2.5 text-muted-foreground">System Audit Log</td>
                     <td className="px-3.5 py-2.5 font-mono text-[11px] text-muted-foreground">3c7e91...d112</td>
                     <td className="px-3.5 py-2.5">
                       <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">Verified</span>
                     </td>
                   </tr>
                   <tr className="hover:bg-muted/20">
-                    <td className="px-3.5 py-2.5 font-mono text-foreground">perimeter_raw_packet.pcap</td>
-                    <td className="px-3.5 py-2.5 text-muted-foreground">CAS-2026-004</td>
+                    <td className="px-3.5 py-2.5 font-mono text-foreground">perimeter_sensor_telemetry.pcap</td>
+                    <td className="px-3.5 py-2.5 text-muted-foreground">CAS-2026-001</td>
                     <td className="px-3.5 py-2.5 text-muted-foreground">Network PCAP</td>
                     <td className="px-3.5 py-2.5 font-mono text-[11px] text-muted-foreground">e2098b...56cc</td>
                     <td className="px-3.5 py-2.5">
@@ -215,16 +228,16 @@ export default function ForensicsDashboardPage() {
         <Card className="border border-border bg-card">
           <CardHeader className="p-3.5 border-b border-border">
             <CardTitle className="text-xs font-semibold text-foreground">
-              CAS-2026-004 &bull; Event Sequence
+              CAS-2026-001 &bull; Event Sequence
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 space-y-4">
             {[
-              { time: "22:14:02", title: "Person Detected in Restricted Perimeter", feed: "North Gate", note: "Subject detected climbing outer fence boundary" },
-              { time: "22:14:38", title: "Perimeter Intrusion Alert Triggered", feed: "Rules Engine", note: "Alert notification dispatched to guard station" },
-              { time: "22:15:10", title: "Camera Feed Signal Disrupted", feed: "North Gate", note: "Hardware RTSP connection severed; standby engaged" },
-              { time: "22:16:04", title: "Failed Authentication Attempts (IP 194.26.29.112)", feed: "Firewall", note: "14 consecutive invalid password attempts" },
-              { time: "22:18:22", title: "Case Created & Evidence Preserved", feed: "Agent Hawke", note: "Incident sealed with SHA-256 evidence integrity" }
+              { time: "13:42:10", title: "Person & Vehicle Detected in Sector 4", feed: "North Gate CAM-01", note: "YOLOv8x detected 1 person (98.4%) scaling outer boundary mesh" },
+              { time: "13:42:48", title: "Intrusion Alert & Evidence Snippet Locked", feed: "Rules Engine v2", note: "Automated alert and 10-second optical snippet dispatched to SOC" },
+              { time: "13:43:20", title: "Optical Stream Cut & Tamper Sensor Tripped", feed: "North Gate CAM-01", note: "Primary fiber cut; watchdog switched to secure cellular telemetry" },
+              { time: "13:44:05", title: "Brute-force RFID Ingress Attempt", feed: "Terminal Door SEC-04", note: "14 invalid badge attempts recorded from IP 194.26.29.112" },
+              { time: "13:46:30", title: "Case Created & Evidence Sealed", feed: "Dr. Hawaldar", note: "Digital evidence vault cryptographically locked with SHA-256 seal" }
             ].map((ev, idx) => (
               <div key={idx} className="flex items-start gap-3">
                 <span className="font-mono text-xs text-muted-foreground pt-0.5 w-16 shrink-0">
@@ -270,11 +283,7 @@ export default function ForensicsDashboardPage() {
 
         <Card className="border border-border bg-card">
           <CardContent className="p-3.5 space-y-2.5">
-            {[
-              { id: "REP-2026-088", title: "Forensics Audit - Perimeter Gate Breach", caseId: "CAS-2026-004", date: "29 Sep 2026", pages: 12 },
-              { id: "REP-2026-087", title: "Server Room Unauthorized Access Investigation", caseId: "CAS-2026-003", date: "28 Sep 2026", pages: 8 },
-              { id: "REP-2026-086", title: "Weapons Anomaly Discrimination Dossier", caseId: "CAS-2026-002", date: "26 Sep 2026", pages: 16 }
-            ].map((rep) => (
+            {(reportsList.length > 0 ? reportsList : BASE_REPORTS).map((rep) => (
               <div key={rep.id} className="p-3 rounded-md bg-muted/40 border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">

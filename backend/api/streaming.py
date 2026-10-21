@@ -119,6 +119,44 @@ async def get_camera_snapshot(camera_id: str, raw: bool = Query(False)):
 
     return Response(content=jpeg_bytes, media_type="image/jpeg")
 
+@router.get("/incident/{camera_id}")
+async def get_camera_incident(camera_id: str):
+    """
+    Returns the latest threat/weapon detection telemetry and base64 snapshot
+    for real-time forensic logging and case generation.
+    """
+    cap = camera_manager.get_capture(camera_id)
+    if not cap:
+        camera_manager.start_stream(camera_id)
+        cap = camera_manager.get_capture(camera_id)
+
+    if not cap:
+        raise HTTPException(status_code=404, detail="Camera not found")
+
+    with cap.lock:
+        detections = list(cap.latest_detections)
+        snapshot = cap.last_incident_snapshot
+        last_incident_time = cap.last_incident_time
+        detected_classes = list(cap.last_incident_detections)
+
+    # If no stored incident snapshot yet but we have an active frame, grab current JPEG as fallback
+    if not snapshot:
+        jpeg_data = cap.get_latest_jpeg(processed=True, quality=85)
+        if jpeg_data:
+            snapshot = "data:image/jpeg;base64," + base64.b64encode(jpeg_data).decode("utf-8")
+            detected_classes = [d.get("class") for d in detections if d.get("class")]
+            last_incident_time = time.strftime("%Y-%m-%dT%H:%M:%S")
+
+    return {
+        "camera_id": camera_id,
+        "camera_name": cap.name,
+        "timestamp": last_incident_time or time.strftime("%Y-%m-%dT%H:%M:%S"),
+        "detections": detections,
+        "detected_classes": detected_classes,
+        "has_threat": any(c in detected_classes for c in ["knife", "weapon", "scissors"]),
+        "snapshot": snapshot
+    }
+
 @router.websocket("/{camera_id}/webrtc")
 @router.websocket("/{camera_id}/ws")
 async def websocket_camera_stream(websocket: WebSocket, camera_id: str):
