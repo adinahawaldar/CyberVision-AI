@@ -4,22 +4,21 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/providers/auth-provider";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const { isAuthenticated } = useAuth();
   const router = useRouter();
 
-  const handleDashboardClick = (e: React.MouseEvent) => {
+  const handleAuthOrDashboard = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (isAuthenticated) {
-      router.push("/dashboard");
-    } else {
-      router.push("/sign-in");
-    }
+    setIsNavigating(true);
+    setMobileMenuOpen(false);
+    window.location.href = isAuthenticated ? "/dashboard" : "/sign-in";
   };
 
   return (
@@ -28,13 +27,13 @@ export default function Navbar() {
       <div className="relative bg-[#1e1e20] border border-white/10 rounded-full p-1.5 shadow-2xl backdrop-blur-xl flex items-center justify-between">
         
         {/* LEFT: BRAND LOGO */}
-        <Link href="/" className="flex items-center pl-3 group shrink-0">
+        <Link href="/" className="flex items-center pl-3.5 pr-1 group shrink-0">
           <Image
             src="/images/logo/logo.png"
             alt="CyberVision AI"
-            width={160}
-            height={50}
-            className="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-105 duration-200"
+            width={140}
+            height={30}
+            className="h-[21px] sm:h-[25px] w-auto object-contain transition-transform group-hover:scale-105 duration-200"
             priority
           />
         </Link>
@@ -52,14 +51,22 @@ export default function Navbar() {
           </a>
         </nav>
 
-        {/* RIGHT: WHITE ROUNDED PILL DASHBOARD CTA BUTTON */}
+        {/* RIGHT: WHITE ROUNDED PILL SIGN IN / DASHBOARD CTA BUTTON */}
         <div className="hidden md:flex items-center shrink-0">
-          <Link
-            href={isAuthenticated ? "/dashboard" : "/sign-in"}
-            className="h-10 px-6 rounded-full bg-white hover:bg-slate-100 text-black font-semibold text-sm sm:text-base transition-all shadow-sm flex items-center justify-center cursor-pointer"
+          <button
+            onClick={handleAuthOrDashboard}
+            disabled={isNavigating}
+            className="h-10 px-6 rounded-full bg-white hover:bg-slate-100 text-black font-semibold text-sm sm:text-base transition-all shadow-sm flex items-center justify-center cursor-pointer disabled:opacity-85 space-x-2"
           >
-            Dashboard
-          </Link>
+            {isNavigating ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-black" />
+                <span>Loading...</span>
+              </>
+            ) : (
+              <span>{isAuthenticated ? "Dashboard" : "Sign In"}</span>
+            )}
+          </button>
         </div>
 
         {/* MOBILE MENU TOGGLE BUTTON */}
@@ -101,13 +108,20 @@ export default function Navbar() {
           </nav>
 
           <div className="pt-2">
-            <Link
-              href={isAuthenticated ? "/dashboard" : "/sign-in"}
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full rounded-full bg-white hover:bg-slate-100 text-black font-semibold text-base py-2.5 shadow-md border-0 transition-colors flex items-center justify-center cursor-pointer"
+            <button
+              onClick={handleAuthOrDashboard}
+              disabled={isNavigating}
+              className="w-full rounded-full bg-white hover:bg-slate-100 text-black font-semibold text-base py-2.5 shadow-md border-0 transition-colors flex items-center justify-center cursor-pointer disabled:opacity-85 space-x-2"
             >
-              Dashboard
-            </Link>
+              {isNavigating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-black" />
+                  <span>Loading...</span>
+                </>
+              ) : (
+                <span>{isAuthenticated ? "Dashboard" : "Sign In"}</span>
+              )}
+            </button>
           </div>
         </div>
       )}

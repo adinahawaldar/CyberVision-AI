@@ -23,7 +23,7 @@
     "type": "alert",
     "title": "Weapon & Sharp Object Detection",
     "message": "CRITICAL WEAPON ALERT: Detected KNIFE at webcam!",
-    "read": false,
+    "read": true,
     "link": "/dashboard/cameras/live?camera=cam-37291daa",
     "timestamp": "2026-10-20T11:12:09",
     "detected_classes": [
@@ -39,7 +39,7 @@
     "type": "alert",
     "title": "SECURITY ALERT: Weapon Detected (KNIFE)",
     "message": "Tactical optical threat detected: KNIFE identified at webcam with real-time YOLOv8 bounding box.",
-    "read": false,
+    "read": true,
     "link": "/dashboard/cameras/live?camera=cam-37291daa",
     "timestamp": "2026-10-20T11:11:24",
     "detected_classes": [
@@ -56,7 +56,7 @@
     "type": "alert",
     "title": "Weapon & Sharp Object Detection",
     "message": "CRITICAL WEAPON ALERT: Detected KNIFE at webcam!",
-    "read": false,
+    "read": true,
     "link": "/dashboard/cameras/live?camera=cam-37291daa",
     "timestamp": "2026-10-20T11:11:24",
     "detected_classes": [

@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Play } from "lucide-react";
+import { ArrowRight, Play, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -11,14 +12,21 @@ import { useAuth } from "@/components/providers/auth-provider";
 export default function Hero() {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  const handleStartInvestigation = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsNavigating(true);
+    const destination = isAuthenticated
+      ? "/dashboard/forensics"
+      : "/sign-in?redirect_url=/dashboard/forensics";
+    window.location.href = destination;
+  };
 
   const handleViewPlatform = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (isAuthenticated) {
-      router.push("/dashboard");
-    } else {
-      router.push("/sign-in");
-    }
+    setIsNavigating(true);
+    window.location.href = isAuthenticated ? "/dashboard" : "/sign-in";
   };
 
   const handleSeeHowItWorks = (e: React.MouseEvent) => {
@@ -151,13 +159,21 @@ export default function Hero() {
         >
           {/* START AN INVESTIGATION BUTTON */}
           <Button
-            asChild
-            className="w-full sm:w-auto h-10 sm:h-11 px-6 rounded-full bg-white hover:bg-slate-100 text-black font-semibold text-xs sm:text-sm transition-all shadow-sm hover:shadow flex items-center justify-center space-x-2 cursor-pointer group"
+            onClick={handleStartInvestigation}
+            disabled={isNavigating}
+            className="w-full sm:w-auto h-10 sm:h-11 px-6 rounded-full bg-white hover:bg-slate-100 text-black font-semibold text-xs sm:text-sm transition-all shadow-sm hover:shadow flex items-center justify-center space-x-2 cursor-pointer group disabled:opacity-85"
           >
-            <Link href={isAuthenticated ? "/dashboard/forensics" : "/sign-in"}>
-              <span>Start an Investigation</span>
-              <ArrowRight className="w-3.5 h-3.5 text-black group-hover:translate-x-0.5 transition-transform" />
-            </Link>
+            {isNavigating ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 text-black animate-spin" />
+                <span>Launching Portal...</span>
+              </>
+            ) : (
+              <>
+                <span>Start an Investigation</span>
+                <ArrowRight className="w-3.5 h-3.5 text-black group-hover:translate-x-0.5 transition-transform" />
+              </>
+            )}
           </Button>
 
           {/* EXPLORE PLATFORM BUTTON */}

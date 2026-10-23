@@ -10,8 +10,8 @@ import { AuthGuard } from "@/components/auth/auth-guard";
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "SecureView AI - CCTV Monitoring",
-  description: "Advanced CCTV monitoring with AI-powered analytics",
+  title: "CyberVision AI - Intelligent CCTV & Forensics",
+  description: "Advanced CCTV monitoring and intelligent forensic investigation powered by AI",
 };
 
 export default function RootLayout({

@@ -16,9 +16,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setIsMounted(true);
     
     if (!isLoading && !user) {
-      router.push('/');
+      window.location.href = '/sign-in';
     }
-  }, [user, isLoading, router]);
+  }, [user, isLoading]);
 
   if (!isMounted || isLoading) {
     return (

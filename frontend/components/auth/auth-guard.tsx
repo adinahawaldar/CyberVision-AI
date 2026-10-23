@@ -11,30 +11,31 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const isPublicRoute = publicRoutes.some(
-    (route) =>
-      pathname === route ||
-      pathname?.startsWith("/sign-in") ||
-      pathname?.startsWith("/sign-up")
-  );
+  const isPublicRoute =
+    !pathname ||
+    pathname === "/" ||
+    pathname.startsWith("/sign-in") ||
+    pathname.startsWith("/sign-up") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/api/");
 
   useEffect(() => {
     if (!isLoading) {
       if (!isAuthenticated && !isPublicRoute) {
-        router.push("/sign-in");
+        window.location.href = "/sign-in";
       } else if (
         isAuthenticated &&
         (pathname?.startsWith("/sign-in") ||
           pathname?.startsWith("/sign-up") ||
           pathname === "/login")
       ) {
-        router.push("/dashboard");
+        window.location.href = "/dashboard";
       }
     }
-  }, [isAuthenticated, isLoading, router, isPublicRoute, pathname]);
+  }, [isAuthenticated, isLoading, isPublicRoute, pathname]);
 
-  // Show loading spinner while Clerk verifies session
-  if (isLoading) {
+  // Only show blocking loading screen for protected routes while session loads
+  if (isLoading && !isPublicRoute) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#0e1015]">
         <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#ff3538]"></div>

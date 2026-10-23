@@ -1,23 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/providers/auth-provider";
 
 export default function CTA() {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
+  const [isNavigating, setIsNavigating] = useState(false);
 
-  const handleDashboardClick = (e: React.MouseEvent) => {
+  const handleGetStarted = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (isAuthenticated) {
-      router.push("/dashboard");
-    } else {
-      router.push("/sign-in");
-    }
+    setIsNavigating(true);
+    window.location.href = isAuthenticated ? "/dashboard" : "/sign-in";
   };
 
   return (
@@ -75,13 +74,21 @@ export default function CTA() {
             className="pt-1 flex justify-center"
           >
             <Button
-              asChild
-              className="h-10 sm:h-11 px-6 sm:px-8 rounded-full bg-white hover:bg-slate-100 text-black font-extrabold text-xs uppercase tracking-wider transition-all hover:scale-105 shadow-lg flex items-center space-x-2 cursor-pointer border-0 group"
+              onClick={handleGetStarted}
+              disabled={isNavigating}
+              className="h-10 sm:h-11 px-6 sm:px-8 rounded-full bg-white hover:bg-slate-100 text-black font-extrabold text-xs uppercase tracking-wider transition-all hover:scale-105 shadow-lg flex items-center space-x-2 cursor-pointer border-0 group disabled:opacity-85"
             >
-              <Link href="/sign-in">
-                <span>GET STARTED NOW</span>
-                <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform" />
-              </Link>
+              {isNavigating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-black" />
+                  <span>LAUNCHING PORTAL...</span>
+                </>
+              ) : (
+                <>
+                  <span>GET STARTED NOW</span>
+                  <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
             </Button>
           </motion.div>
 
